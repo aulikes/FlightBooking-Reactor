@@ -2,58 +2,61 @@ package com.aug.flightbooking.domain.model.airline;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 /**
- * Representa la entidad raíz del contexto Airline. Contiene los vuelos asociados a la aerolínea.
+ * Representa una aerolínea como Aggregate Root.
+ * Contiene una lista de vuelos asociados como entidades dependientes.
  */
 public class Airline {
 
-    // Identificador único de la aerolínea, generado por la base de datos
     private Long id;
-
-    // Nombre comercial de la aerolínea
     private String name;
-
-    // País de origen de la aerolínea
-    private String country;
-
-    // Lista de vuelos asociados a esta aerolínea (entidad dependiente)
-    private final List<Flight> flights = new ArrayList<>();
+    private String iataCode;
+    private List<Flight> flights;
 
     /**
-     * Constructor de la entidad Airline.
-     * Inicializa el estado con los valores principales.
+     * Constructor por defecto requerido para algunas librerías y frameworks.
      */
-    public Airline(Long id, String name, String country) {
-        this.id = id;
-        this.name = name;
-        this.country = country;
+    protected Airline() {
+        this.flights = new ArrayList<>();
     }
 
     /**
-     * Permite agregar un nuevo vuelo a la lista de vuelos de esta aerolínea.
+     * Constructor principal de la entidad Airline.
+     *
+     * @param name     nombre de la aerolínea.
+     * @param iataCode código IATA de la aerolínea.
+     */
+    public Airline(String name, String iataCode) {
+        this.name = name;
+        this.iataCode = iataCode;
+        this.flights = new ArrayList<>();
+    }
+
+    /**
+     * Agrega un vuelo a la lista de vuelos de la aerolínea.
+     *
+     * @param flight objeto de vuelo que se agregará.
      */
     public void addFlight(Flight flight) {
+        if (flight == null) {
+            throw new IllegalArgumentException("El vuelo no puede ser nulo.");
+        }
         this.flights.add(flight);
     }
 
     /**
-     * Elimina un vuelo según su identificador.
-     * Si el ID coincide, se remueve de la lista.
+     * Busca un vuelo por su código.
+     *
+     * @param flightCode código del vuelo.
+     * @return el objeto Flight si se encuentra, de lo contrario null.
      */
-    public void removeFlightById(Long flightId) {
-        this.flights.removeIf(f -> f.getId().equals(flightId));
-    }
-
-    /**
-     * Busca y retorna un vuelo por su identificador.
-     * Si no existe, retorna un Optional vacío.
-     */
-    public Optional<Flight> findFlightById(Long flightId) {
-        return this.flights.stream()
-                .filter(f -> f.getId().equals(flightId))
-                .findFirst();
+    public Flight findFlightByCode(String flightCode) {
+        return flights.stream()
+                .filter(f -> f.getFlightCode().equalsIgnoreCase(flightCode))
+                .findFirst()
+                .orElse(null);
     }
 
     // Getters y Setters
@@ -66,8 +69,8 @@ public class Airline {
         return name;
     }
 
-    public String getCountry() {
-        return country;
+    public String getIataCode() {
+        return iataCode;
     }
 
     public List<Flight> getFlights() {
@@ -82,7 +85,26 @@ public class Airline {
         this.name = name;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setIataCode(String iataCode) {
+        this.iataCode = iataCode;
+    }
+
+    public void setFlights(List<Flight> flights) {
+        this.flights = flights;
+    }
+
+    // equals y hashCode basados en ID
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Airline)) return false;
+        Airline airline = (Airline) o;
+        return Objects.equals(id, airline.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

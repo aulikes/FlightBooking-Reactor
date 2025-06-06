@@ -1,49 +1,56 @@
 package com.aug.flightbooking.domain.model.checkin;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
- * Representa el registro de check-in realizado por un pasajero.
- * Esta clase es una entidad dependiente del agregado Ticket.
+ * Representa el proceso de Check-in de un ticket.
+ * Solo puede realizarse dentro de una ventana de tiempo antes del vuelo.
  */
 public class CheckIn {
 
-    // Hora en la que se realizó el check-in
-    private final LocalDateTime checkInTime;
+    // Tiempo mínimo antes de la salida del vuelo para iniciar check-in (24 horas)
+    private static final int MIN_HOURS_BEFORE_FLIGHT = 24;
 
-    // Tiempo mínimo y máximo permitido para hacer check-in (en horas)
-    private static final long MIN_HOURS_BEFORE_FLIGHT = 2;
-    private static final long MAX_HOURS_BEFORE_FLIGHT = 24;
+    // Tiempo máximo antes de la salida del vuelo para cerrar check-in (2 horas)
+    private static final int MAX_HOURS_BEFORE_FLIGHT = 2;
 
-    private CheckIn(LocalDateTime checkInTime) {
-        this.checkInTime = checkInTime;
+    private final LocalDateTime checkedInAt;
+    private final String seatNumber;
+
+    /**
+     * Crea un nuevo check-in verificando que esté dentro del rango permitido.
+     *
+     * @param flightDepartureTime fecha y hora de salida del vuelo asociado al ticket
+     * @param checkInTime          fecha y hora en que se realiza el check-in
+     * @param seatNumber           número de asiento asignado
+     */
+    public CheckIn(LocalDateTime flightDepartureTime, LocalDateTime checkInTime, String seatNumber) {
+        validateCheckInTime(flightDepartureTime, checkInTime);
+        this.checkedInAt = Objects.requireNonNull(checkInTime, "Check-in time cannot be null");
+        this.seatNumber = Objects.requireNonNull(seatNumber, "Seat number cannot be null");
     }
 
     /**
-     * Crea un nuevo check-in validando las restricciones de horario.
-     *
-     * @param checkInTime Momento en que el pasajero intenta hacer el check-in.
-     * @return Instancia válida de CheckIn.
-     * @throws IllegalArgumentException si el check-in se realiza fuera del rango permitido.
+     * Verifica que la hora de check-in esté dentro del rango permitido.
      */
-    public static CheckIn create(LocalDateTime checkInTime) {
-        LocalDateTime now = LocalDateTime.now();
-
-        long hoursBefore = Duration.between(now, checkInTime).toHours();
-
-        if (hoursBefore < MIN_HOURS_BEFORE_FLIGHT || hoursBefore > MAX_HOURS_BEFORE_FLIGHT) {
-            throw new IllegalArgumentException("El check-in solo puede hacerse entre 24 y 2 horas antes del vuelo.");
+    private void validateCheckInTime(LocalDateTime flightDepartureTime, LocalDateTime checkInTime) {
+        if (flightDepartureTime == null || checkInTime == null) {
+            throw new IllegalArgumentException("Both flight and check-in time are required.");
         }
 
-        return new CheckIn(checkInTime);
+        long hoursBefore = java.time.Duration.between(checkInTime, flightDepartureTime).toHours();
+
+        if (hoursBefore < MAX_HOURS_BEFORE_FLIGHT || hoursBefore > MIN_HOURS_BEFORE_FLIGHT) {
+            throw new IllegalStateException("Check-in must be done between 24 and 2 hours before flight.");
+        }
     }
 
-    /**
-     * Devuelve la fecha y hora en que se realizó el check-in.
-     */
-    public LocalDateTime getCheckInTime() {
-        return checkInTime;
+    public LocalDateTime getCheckedInAt() {
+        return checkedInAt;
+    }
+
+    public String getSeatNumber() {
+        return seatNumber;
     }
 }
-

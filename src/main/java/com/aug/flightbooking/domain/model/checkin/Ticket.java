@@ -1,13 +1,10 @@
 package com.aug.flightbooking.domain.model.checkin;
 
-import com.aug.flightbooking.domain.model.airline.Flight;
-import com.aug.flightbooking.domain.service.CheckInValidationDomainService;
-
 import java.time.LocalDateTime;
 
 /**
  * Representa un tiquete de vuelo emitido a un pasajero.
- * Es un Aggregate Root que encapsula su propio ciclo de vida.
+ * Es un Aggregate Root que encapsula su propio ciclo de vida y reglas de negocio.
  */
 public class Ticket {
 
@@ -17,7 +14,9 @@ public class Ticket {
     private LocalDateTime issuedAt;
     private TicketStatus status;
 
-    // Constructor privado para forzar el uso del método de creación
+    /**
+     * Constructor privado para forzar el uso del método de fábrica estático.
+     */
     private Ticket(Long reservationId, Long flightId, TicketStatus status, LocalDateTime issuedAt) {
         this.reservationId = reservationId;
         this.flightId = flightId;
@@ -26,14 +25,19 @@ public class Ticket {
     }
 
     /**
-     * Crea un nuevo tiquete emitido, con la fecha de emisión indicada.
+     * Crea un nuevo tiquete emitido, marcando su estado inicial como EMITTED.
      */
     public static Ticket create(Long reservationId, Long flightId, LocalDateTime issuedAt) {
         return new Ticket(reservationId, flightId, TicketStatus.EMITTED, issuedAt);
     }
 
     /**
-     * Intenta hacer check-in para este tiquete, si está permitido.
+     * Intenta realizar el check-in de este tiquete.
+     * Utiliza las reglas del dominio para validar si el check-in es posible.
+     *
+     * @param flight Vuelo asociado al tiquete.
+     * @param checkInTime Fecha y hora en la que se desea hacer el check-in.
+     * @param validationService Servicio de validación con reglas del dominio.
      */
     public void attemptCheckIn(Flight flight, LocalDateTime checkInTime, CheckInValidationDomainService validationService) {
         if (this.status != TicketStatus.EMITTED) {
@@ -48,7 +52,7 @@ public class Ticket {
     }
 
     /**
-     * Marca el tiquete como usado, si ya se ha hecho check-in.
+     * Marca el tiquete como usado después del proceso de abordaje.
      */
     public void markAsUsed() {
         if (this.status != TicketStatus.CHECKED_IN) {
@@ -59,7 +63,7 @@ public class Ticket {
     }
 
     /**
-     * Cancela el tiquete si no ha sido usado ni tiene check-in.
+     * Cancela el tiquete si aún no ha sido usado ni se ha hecho check-in.
      */
     public void cancel() {
         if (this.status == TicketStatus.USED || this.status == TicketStatus.CHECKED_IN) {
@@ -69,7 +73,7 @@ public class Ticket {
         this.status = TicketStatus.CANCELLED;
     }
 
-    // Getters necesarios (puedes agregar los que necesites para persistencia o lectura)
+    // Getters necesarios para lectura o persistencia
 
     public Long getId() {
         return id;

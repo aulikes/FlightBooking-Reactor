@@ -1,39 +1,35 @@
 package com.aug.flightbooking.domain.service;
 
-
 import com.aug.flightbooking.domain.model.airline.Flight;
 import com.aug.flightbooking.domain.model.checkin.Ticket;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
- * Servicio de dominio encargado de validar si se permite realizar el check-in
- * para un ticket en un vuelo específico.
+ * Servicio de dominio que encapsula la lógica de validación para el proceso de check-in.
+ * Permite centralizar reglas que podrían involucrar múltiples agregados (como Ticket y Flight).
  */
 public class CheckInValidationDomainService {
 
-    // Margen de tiempo permitido para el check-in antes del vuelo
-    private static final Duration CHECKIN_START_OFFSET = Duration.ofHours(24);
-    private static final Duration CHECKIN_END_OFFSET = Duration.ofHours(2);
+    // Margen permitido para check-in: desde 24h antes hasta 2h antes del vuelo
+    private static final int HOURS_BEFORE_DEPARTURE_ALLOWED = 24;
+    private static final int HOURS_BEFORE_DEPARTURE_LIMIT = 2;
 
     /**
-     * Verifica si el check-in está permitido según la hora de salida del vuelo
-     * y las reglas definidas por el negocio.
+     * Determina si se puede realizar el check-in para un vuelo en un momento dado.
      *
-     * @param flight Vuelo relacionado al check-in
-     * @param ticket Ticket asociado al pasajero
-     * @param checkInTime Momento en el que se intenta hacer el check-in
-     * @return true si el check-in está permitido, false en caso contrario
+     * @param flight El vuelo correspondiente al tiquete.
+     * @param ticket El tiquete sobre el cual se intenta hacer check-in.
+     * @param checkInTime El momento en que se intenta hacer check-in.
+     * @return true si es permitido, false si está fuera del rango de tiempo.
      */
     public boolean canCheckIn(Flight flight, Ticket ticket, LocalDateTime checkInTime) {
         LocalDateTime departureTime = flight.getDepartureTime();
 
-        // Calcula la ventana válida para hacer check-in
-        LocalDateTime checkInStart = departureTime.minus(CHECKIN_START_OFFSET);
-        LocalDateTime checkInEnd = departureTime.minus(CHECKIN_END_OFFSET);
+        LocalDateTime checkInWindowStart = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_ALLOWED);
+        LocalDateTime checkInWindowEnd = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_LIMIT);
 
-        // Verifica que la hora actual esté dentro del rango permitido
-        return !checkInTime.isBefore(checkInStart) && !checkInTime.isAfter(checkInEnd);
+        return !checkInTime.isBefore(checkInWindowStart) && !checkInTime.isAfter(checkInWindowEnd);
     }
 }
+
