@@ -26,10 +26,10 @@ public class TicketEmissionDomainService {
     public Ticket emitTicket(Reservation reservation, Flight flight) {
         validateReservation(reservation);
         validateFlight(flight);
-        validateTimingConstraints(flight.getDepartureTime());
+        validateTimingConstraints(flight.getScheduledDeparture());
 
         return Ticket.create(
-                reservation.getReservationId(),
+                reservation.getId(),
                 flight.getId(),
                 LocalDateTime.now()
         );

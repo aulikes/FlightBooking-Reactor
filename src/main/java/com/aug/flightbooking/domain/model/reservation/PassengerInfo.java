@@ -4,7 +4,7 @@ package com.aug.flightbooking.domain.model.reservation;
  * Representa los datos básicos del pasajero que realiza la reserva.
  * Es un objeto de valor y no debe tener identidad propia.
  */
-public class PassengerData {
+public class PassengerInfo {
 
     /**
      * Nombre completo del pasajero.
@@ -25,7 +25,7 @@ public class PassengerData {
      * Crea un nuevo objeto de datos del pasajero.
      * Los campos no deben ser nulos ni vacíos.
      */
-    public PassengerData(String fullName, String document, String email) {
+    public PassengerInfo(String fullName, String document, String email) {
         if (fullName == null || fullName.isBlank()) {
             throw new IllegalArgumentException("El nombre completo es obligatorio.");
         }
@@ -66,11 +66,11 @@ public class PassengerData {
     }
 
     /**
-     * Dos objetos PassengerData son iguales si todos sus campos son iguales.
+     * Dos objetos PassengerInfo son iguales si todos sus campos son iguales.
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof PassengerData other)) return false;
+        if (!(obj instanceof PassengerInfo other)) return false;
         return fullName.equals(other.fullName)
                 && document.equals(other.document)
                 && email.equals(other.email);

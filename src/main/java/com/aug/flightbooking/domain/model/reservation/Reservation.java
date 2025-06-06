@@ -1,76 +1,62 @@
 package com.aug.flightbooking.domain.model.reservation;
-import lombok.Getter;
-import lombok.NonNull;
 
 import java.time.LocalDateTime;
 
 /**
  * Representa una reserva de vuelo realizada por un cliente.
- * Esta clase es la raíz del agregado del contexto de reservas.
+ * Es el Aggregate Root del contexto de reservas.
  */
-@Getter
 public class Reservation {
 
     private Long id;
-    private final Long flightId;
-    private final PassengerData passengerData;
-    private ReservationStatus status;
+    private Long flightId;
+    private Long passengerId;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private ReservationStatus status;
 
-    /**
-     * Constructor principal para crear una nueva reserva.
-     * Inicializa la reserva con estado CREATED y marca la hora de creación.
-     */
-    public Reservation(@NonNull Long flightId, @NonNull PassengerData passengerData) {
+    private Reservation(Long flightId, Long passengerId, ReservationStatus status, LocalDateTime createdAt) {
         this.flightId = flightId;
-        this.passengerData = passengerData;
-        this.status = ReservationStatus.CREATED;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = this.createdAt;
+        this.passengerId = passengerId;
+        this.status = status;
+        this.createdAt = createdAt;
     }
 
     /**
-     * Método de fábrica para crear una reserva con ID (por ejemplo, luego de guardarla en base de datos).
+     * Crea una nueva reserva con estado inicial CREATED.
      */
-    public static Reservation withId(Long id, Long flightId, PassengerData passengerData, ReservationStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        Reservation reservation = new Reservation(flightId, passengerData);
-        reservation.id = id;
-        reservation.status = status;
-        reservation.createdAt = createdAt;
-        reservation.updatedAt = updatedAt;
-        return reservation;
+    public static Reservation create(Long flightId, Long passengerId, LocalDateTime createdAt) {
+        return new Reservation(flightId, passengerId, ReservationStatus.CREATED, createdAt);
     }
 
     /**
-     * Marca la reserva como pendiente luego de ser enviada a la aerolínea.
+     * Cambia el estado de la reserva, validando la transición.
      */
-    public void markAsPending() {
-        this.status = ReservationStatus.PENDING;
-        this.updatedAt = LocalDateTime.now();
+    public void changeStatus(ReservationStatus newStatus) {
+        if (!ReservationStateMachine.canTransition(this.status, newStatus)) {
+            throw new IllegalStateException("Transición no permitida de " + this.status + " a " + newStatus);
+        }
+        this.status = newStatus;
     }
 
-    /**
-     * Marca la reserva como fallida si ocurrió un error al notificar a la aerolínea.
-     */
-    public void markAsFailed() {
-        this.status = ReservationStatus.FAILED;
-        this.updatedAt = LocalDateTime.now();
+    // Getters
+
+    public Long getId() {
+        return id;
     }
 
-    /**
-     * Marca la reserva como confirmada exitosamente.
-     */
-    public void markAsConfirmed() {
-        this.status = ReservationStatus.CONFIRMED;
-        this.updatedAt = LocalDateTime.now();
+    public Long getFlightId() {
+        return flightId;
     }
 
-    /**
-     * Cancela la reserva por cualquier motivo externo.
-     */
-    public void cancel() {
-        this.status = ReservationStatus.CANCELLED;
-        this.updatedAt = LocalDateTime.now();
+    public Long getPassengerId() {
+        return passengerId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public ReservationStatus getStatus() {
+        return status;
     }
 }

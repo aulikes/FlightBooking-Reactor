@@ -1,107 +1,94 @@
 package com.aug.flightbooking.domain.model.airline;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 /**
- * Representa un vuelo operado por una aerolínea específica.
- * Incluye su estado, horarios y lógica de transición de estados.
+ * Representa un vuelo de una aerolínea en el sistema.
+ * Es el Aggregate Root del contexto de aerolínea.
  */
 public class Flight {
 
-    private final Long id;
-    private final Long airlineId;
-    private final String flightNumber;
-    private final String origin;
-    private final String destination;
-    private final LocalDateTime departureTime;
-    private final LocalDateTime arrivalTime;
-
+    private Long id;
+    private Airline airline; // Value Object interno
+    private String flightCode;
+    private String origin;
+    private String destination;
+    private LocalDateTime scheduledDeparture;
+    private LocalDateTime scheduledArrival;
     private FlightStatus status;
 
-    /**
-     * Constructor principal para crear un vuelo.
-     */
-    public Flight(Long id, Long airlineId, String flightNumber, String origin, String destination,
-                  LocalDateTime departureTime, LocalDateTime arrivalTime) {
-        this.id = Objects.requireNonNull(id);
-        this.airlineId = Objects.requireNonNull(airlineId);
-        this.flightNumber = Objects.requireNonNull(flightNumber);
-        this.origin = Objects.requireNonNull(origin);
-        this.destination = Objects.requireNonNull(destination);
-        this.departureTime = Objects.requireNonNull(departureTime);
-        this.arrivalTime = Objects.requireNonNull(arrivalTime);
-        this.status = FlightStatus.CREATED;
-    }
-
-    // =============================
-    // MÉTODOS DE NEGOCIO DEL VUELO
-    // =============================
-
-    /**
-     * Marca el vuelo como programado (SCHEDULED).
-     */
-    public void schedule() {
-        if (status != FlightStatus.CREATED) {
-            throw new IllegalStateException("Only CREATED flights can be scheduled.");
-        }
+    // Constructor privado
+    private Flight(Airline airline, String flightCode, String origin, String destination,
+                   LocalDateTime scheduledDeparture, LocalDateTime scheduledArrival) {
+        this.airline = airline;
+        this.flightCode = flightCode;
+        this.origin = origin;
+        this.destination = destination;
+        this.scheduledDeparture = scheduledDeparture;
+        this.scheduledArrival = scheduledArrival;
         this.status = FlightStatus.SCHEDULED;
     }
 
     /**
-     * Marca el inicio del abordaje (BOARDING).
+     * Fábrica para crear un nuevo vuelo programado.
+     */
+    public static Flight scheduleFlight(Airline airline, String flightCode, String origin, String destination,
+                                        LocalDateTime scheduledDeparture, LocalDateTime scheduledArrival) {
+        return new Flight(airline, flightCode, origin, destination, scheduledDeparture, scheduledArrival);
+    }
+
+    /**
+     * Marca el vuelo como en proceso de abordaje.
      */
     public void startBoarding() {
         if (status != FlightStatus.SCHEDULED) {
-            throw new IllegalStateException("Only SCHEDULED flights can start boarding.");
+            throw new IllegalStateException("Solo se puede iniciar abordaje de un vuelo programado.");
         }
         this.status = FlightStatus.BOARDING;
     }
 
     /**
-     * Marca el vuelo como retrasado (DELAYED).
+     * Marca el vuelo como en el aire.
      */
-    public void delay() {
-        if (status != FlightStatus.SCHEDULED && status != FlightStatus.BOARDING) {
-            throw new IllegalStateException("Only SCHEDULED or BOARDING flights can be delayed.");
+    public void takeOff() {
+        if (status != FlightStatus.BOARDING) {
+            throw new IllegalStateException("Solo se puede despegar después de haber iniciado abordaje.");
         }
-        this.status = FlightStatus.DELAYED;
+        this.status = FlightStatus.IN_AIR;
     }
 
     /**
-     * Finaliza el vuelo con éxito.
+     * Marca el vuelo como aterrizado.
      */
-    public void finish() {
-        if (status != FlightStatus.BOARDING && status != FlightStatus.DELAYED) {
-            throw new IllegalStateException("Only BOARDING or DELAYED flights can be finished.");
+    public void land() {
+        if (status != FlightStatus.IN_AIR) {
+            throw new IllegalStateException("Solo se puede aterrizar un vuelo que esté en el aire.");
         }
         this.status = FlightStatus.FINISHED;
     }
 
     /**
-     * Cancela el vuelo.
+     * Marca el vuelo como cancelado.
      */
     public void cancel() {
-        if (status == FlightStatus.FINISHED || status == FlightStatus.CANCELLED) {
-            throw new IllegalStateException("Finished or already cancelled flights cannot be cancelled.");
+        if (status == FlightStatus.FINISHED || status == FlightStatus.IN_AIR) {
+            throw new IllegalStateException("No se puede cancelar un vuelo que ya despegó o aterrizó.");
         }
         this.status = FlightStatus.CANCELLED;
     }
 
-    // =============================
-    // MÉTODOS GET
-    // =============================
+    // Getters
 
     public Long getId() {
         return id;
     }
 
-    public Long getAirlineId() {
-        return airlineId;
+    public Airline getAirline() {
+        return airline;
     }
 
-    public String getFlightNumber() {
-        return flightNumber;
+    public String getFlightCode() {
+        return flightCode;
     }
 
     public String getOrigin() {
@@ -112,12 +99,12 @@ public class Flight {
         return destination;
     }
 
-    public LocalDateTime getDepartureTime() {
-        return departureTime;
+    public LocalDateTime getScheduledDeparture() {
+        return scheduledDeparture;
     }
 
-    public LocalDateTime getArrivalTime() {
-        return arrivalTime;
+    public LocalDateTime getScheduledArrival() {
+        return scheduledArrival;
     }
 
     public FlightStatus getStatus() {

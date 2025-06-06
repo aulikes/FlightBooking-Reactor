@@ -24,7 +24,7 @@ public class CheckInValidationDomainService {
      * @return true si es permitido, false si está fuera del rango de tiempo.
      */
     public boolean canCheckIn(Flight flight, Ticket ticket, LocalDateTime checkInTime) {
-        LocalDateTime departureTime = flight.getDepartureTime();
+        LocalDateTime departureTime = flight.getScheduledDeparture();
 
         LocalDateTime checkInWindowStart = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_ALLOWED);
         LocalDateTime checkInWindowEnd = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_LIMIT);
