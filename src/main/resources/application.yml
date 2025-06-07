@@ -12,6 +12,11 @@ spring:
     auto-startup: true
     with-security: false
 
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/flightbooking
+    username: your_user
+    password: your_password
+
   datasource:
     url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver

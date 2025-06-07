@@ -1,83 +1,46 @@
 package com.aug.flightbooking.domain.model.reservation;
 
 /**
- * Representa los datos básicos del pasajero que realiza la reserva.
- * Es un objeto de valor y no debe tener identidad propia.
+ * Value Object que representa la información básica del pasajero asociada a una reserva.
+ * No tiene identidad propia ni comportamiento, solo contiene datos referenciales.
  */
 public class PassengerInfo {
 
-    /**
-     * Nombre completo del pasajero.
-     */
     private final String fullName;
+    private final String documentId;
 
-    /**
-     * Documento de identidad del pasajero.
-     */
-    private final String document;
-
-    /**
-     * Correo electrónico de contacto.
-     */
-    private final String email;
-
-    /**
-     * Crea un nuevo objeto de datos del pasajero.
-     * Los campos no deben ser nulos ni vacíos.
-     */
-    public PassengerInfo(String fullName, String document, String email) {
+    public PassengerInfo(String fullName, String documentId) {
         if (fullName == null || fullName.isBlank()) {
-            throw new IllegalArgumentException("El nombre completo es obligatorio.");
+            throw new IllegalArgumentException("El nombre completo no puede estar vacío.");
         }
-        if (document == null || document.isBlank()) {
-            throw new IllegalArgumentException("El documento es obligatorio.");
+        if (documentId == null || documentId.isBlank()) {
+            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
         }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("El correo electrónico es obligatorio.");
-        }
-
         this.fullName = fullName;
-        this.document = document;
-        this.email = email;
+        this.documentId = documentId;
     }
-
-    /**
-     * Valida que los campos del pasajero sean válidos.
-     * Método utilizado por entidades que lo contienen.
-     */
-    public boolean isValid() {
-        return fullName != null && !fullName.isBlank()
-                && document != null && !document.isBlank()
-                && email != null && !email.isBlank();
-    }
-
-    // Getters públicos para exponer los datos
 
     public String getFullName() {
         return fullName;
     }
 
-    public String getDocument() {
-        return document;
+    public String getDocumentId() {
+        return documentId;
     }
 
-    public String getEmail() {
-        return email;
-    }
+    // Equals y hashCode para respetar las reglas de los Value Objects
 
-    /**
-     * Dos objetos PassengerInfo son iguales si todos sus campos son iguales.
-     */
     @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof PassengerInfo other)) return false;
-        return fullName.equals(other.fullName)
-                && document.equals(other.document)
-                && email.equals(other.email);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PassengerInfo)) return false;
+
+        PassengerInfo that = (PassengerInfo) o;
+        return fullName.equals(that.fullName) && documentId.equals(that.documentId);
     }
 
     @Override
     public int hashCode() {
-        return fullName.hashCode() + document.hashCode() + email.hashCode();
+        return fullName.hashCode() * 31 + documentId.hashCode();
     }
 }

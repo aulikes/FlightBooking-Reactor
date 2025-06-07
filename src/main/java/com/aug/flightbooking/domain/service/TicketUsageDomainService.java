@@ -1,7 +1,7 @@
 package com.aug.flightbooking.domain.service;
 
-import com.aug.flightbooking.domain.model.airline.Flight;
-import com.aug.flightbooking.domain.model.airline.FlightStatus;
+import com.aug.flightbooking.domain.model.flight.Flight;
+import com.aug.flightbooking.domain.model.flight.FlightStatus;
 import com.aug.flightbooking.domain.model.checkin.Ticket;
 
 /**

@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.airline;
+package com.aug.flightbooking.domain.model.flight;
 
 public enum FlightStatus {
     SCHEDULED,     // Vuelo programado con fecha y hora

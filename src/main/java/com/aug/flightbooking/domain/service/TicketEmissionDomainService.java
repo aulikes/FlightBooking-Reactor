@@ -1,10 +1,10 @@
 package com.aug.flightbooking.domain.service;
 
-import com.aug.flightbooking.domain.model.airline.Flight;
+import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.domain.model.checkin.Ticket;
 import com.aug.flightbooking.domain.model.reservation.Reservation;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatus;
-import com.aug.flightbooking.domain.model.airline.FlightStatus;
+import com.aug.flightbooking.domain.model.flight.FlightStatus;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

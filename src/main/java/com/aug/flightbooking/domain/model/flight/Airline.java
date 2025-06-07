@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.airline;
+package com.aug.flightbooking.domain.model.flight;
 
 /**
  * Representa los datos de una aerolínea como un objeto de valor.

@@ -1,6 +1,6 @@
 package com.aug.flightbooking.domain.service;
 
-import com.aug.flightbooking.domain.model.airline.Flight;
+import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.domain.model.checkin.Ticket;
 
 import java.time.LocalDateTime;

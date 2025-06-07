@@ -1,10 +1,10 @@
-package com.aug.flightbooking.domain.model.airline;
+package com.aug.flightbooking.domain.model.flight;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
- * Representa un vuelo de una aerolínea en el sistema.
- * Es el Aggregate Root del contexto de aerolínea.
+ * Aggregate Root que representa un vuelo y su disponibilidad.
  */
 public class Flight {
 
@@ -12,7 +12,9 @@ public class Flight {
     private Airline airline; // Value Object interno
     private String flightCode;
     private String origin;
-    private String destination;
+    private String destination;    
+	private final int totalSeats;
+    private int reservedSeats;
     private LocalDateTime scheduledDeparture;
     private LocalDateTime scheduledArrival;
     private FlightStatus status;
@@ -77,6 +79,27 @@ public class Flight {
         this.status = FlightStatus.CANCELLED;
     }
 
+    /**
+     * Indica si aún hay asientos disponibles.
+     */
+    public boolean hasAvailableSeats() {
+        return reservedSeats < totalSeats;
+    }
+
+
+    /**
+     * Intenta reservar un asiento. Retorna true si fue exitoso.
+     */
+    public boolean tryReserveSeat() {
+        if (hasAvailableSeats()) {
+            reservedSeats++;
+            return true;
+        }
+        return false;
+    }
+
+
+
     // Getters
 
     public Long getId() {
@@ -99,6 +122,14 @@ public class Flight {
         return destination;
     }
 
+    public int getTotalSeats() {
+        return totalSeats;
+    }
+
+    public int getReservedSeats() {
+        return reservedSeats;
+    }
+
     public LocalDateTime getScheduledDeparture() {
         return scheduledDeparture;
     }
@@ -109,5 +140,29 @@ public class Flight {
 
     public FlightStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Flight)) return false;
+        Flight flight = (Flight) o;
+        return Objects.equals(id, flight.id);
+    }
+
+    @Override
+    public String toString() {
+        return "Flight{" +
+                "flightCode='" + flightCode + '\'' +
+                ", airline=" + airline +
+                ", origin='" + origin + '\'' +
+                ", destination='" + destination + '\'' +
+                ", status=" + status +
+                '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

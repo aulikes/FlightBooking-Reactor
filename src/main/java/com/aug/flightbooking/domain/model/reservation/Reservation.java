@@ -1,6 +1,6 @@
 package com.aug.flightbooking.domain.model.reservation;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Representa una reserva de vuelo realizada por un cliente.
@@ -10,13 +10,13 @@ public class Reservation {
 
     private Long id;
     private Long flightId;
-    private Long passengerId;
-    private LocalDateTime createdAt;
+    private PassengerInfo passengerInfo;
+    private Instant createdAt;
     private ReservationStatus status;
 
-    private Reservation(Long flightId, Long passengerId, ReservationStatus status, LocalDateTime createdAt) {
+    private Reservation(Long flightId, PassengerInfo passengerInfo, ReservationStatus status, Instant createdAt) {
         this.flightId = flightId;
-        this.passengerId = passengerId;
+        this.passengerInfo = passengerInfo;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -24,8 +24,8 @@ public class Reservation {
     /**
      * Crea una nueva reserva con estado inicial CREATED.
      */
-    public static Reservation create(Long flightId, Long passengerId, LocalDateTime createdAt) {
-        return new Reservation(flightId, passengerId, ReservationStatus.CREATED, createdAt);
+    public static Reservation create(Long flightId, PassengerInfo passengerInfo, Instant createdAt) {
+        return new Reservation(flightId, passengerInfo, ReservationStatus.CREATED, createdAt);
     }
 
     /**
@@ -38,8 +38,6 @@ public class Reservation {
         this.status = newStatus;
     }
 
-    // Getters
-
     public Long getId() {
         return id;
     }
@@ -48,11 +46,11 @@ public class Reservation {
         return flightId;
     }
 
-    public Long getPassengerId() {
-        return passengerId;
+    public PassengerInfo getPassengerInfo() {
+        return passengerInfo;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
