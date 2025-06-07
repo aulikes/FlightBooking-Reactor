@@ -22,7 +22,7 @@ public class CreateReservationService implements CreateReservationUseCase {
 
     private final ReservationRepository reservationRepository;
     private final ReservationEventPublisher eventPublisher;
-    private final ReservationCache timeoutTracker;
+    private final ReservationCache reservationCache;
 
     @Override
     public Mono<ReservationResult> createReservation(CreateReservationCommand command) {
@@ -43,7 +43,7 @@ public class CreateReservationService implements CreateReservationUseCase {
                     );
                     // 2. De forma asíncrona: publica el evento y envía registro de timeout a Redis
                     Mono<Void> publish = eventPublisher.publishCreated(event);
-                    Mono<Void> track = timeoutTracker.registerTimeout(saved.getId());
+                    Mono<Void> track = reservationCache.registerTimeout(saved.getId());
                     return Mono.when(
                             publish,
                             track

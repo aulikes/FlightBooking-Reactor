@@ -30,7 +30,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	//Redis
+//    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
 	//PostgreSQL
 	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
