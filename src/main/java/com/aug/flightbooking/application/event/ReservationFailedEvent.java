@@ -1,15 +1,15 @@
 package com.aug.flightbooking.application.event;
 
-public record ReservationCreatedEvent(
+import java.time.Instant;
+
+public record ReservationFailedEvent(
     Long reservationId,
-    Long flightId,
-    String fullName,
-    String documentId
+    String reason
 ) implements IntegrationEvent {
 
     @Override
     public String getEventType() {
-        return "ReservationCreatedEvent";
+        return "ReservationFailedEvent";
     }
 
     @Override
