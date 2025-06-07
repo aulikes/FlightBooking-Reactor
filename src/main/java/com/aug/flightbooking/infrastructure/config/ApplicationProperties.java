@@ -18,6 +18,7 @@ public class ApplicationProperties {
     public static class Redis {
         private long reservationTimeoutSeconds;
         private long periodFluxSeconds;
+        private String keyPrefixReservationCache;
     }
 
 }

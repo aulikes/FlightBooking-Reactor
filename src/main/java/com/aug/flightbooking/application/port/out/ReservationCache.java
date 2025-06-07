@@ -9,7 +9,11 @@ public interface ReservationCache {
 
     /**
      * Registra una reserva para que sea monitoreada por timeout.
-     * @param reservationId ID de la reserva
      */
     Mono<Void> registerTimeout(Long reservationId);
+
+    /**
+     * Cancela el timeout de la reserva cuando ya tuvo respuesta
+     */
+    Mono<Void> cancelTimeout(Long reservationId);
 }

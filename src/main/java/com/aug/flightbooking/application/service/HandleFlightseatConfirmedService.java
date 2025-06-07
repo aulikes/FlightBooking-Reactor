@@ -2,6 +2,7 @@ package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
 import com.aug.flightbooking.application.port.in.HandleFlightseatConfirmedUseCase;
+import com.aug.flightbooking.application.port.out.ReservationCache;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,12 +19,24 @@ import reactor.core.publisher.Mono;
 public class HandleFlightseatConfirmedService implements HandleFlightseatConfirmedUseCase {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
+    private final ReservationCache reservationCache;
 
     /**
      * Maneja el evento de reserva confirmada y actualiza el estado a CONFIRMED.
      */
     @Override
     public Mono<Void> handle(FlightseatConfirmedEvent event) {
-        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.CONFIRMED);
+        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.CONFIRMED)
+            .onErrorResume(error -> {
+                log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
+                return Mono.empty();
+            })
+            .then(
+                reservationCache.cancelTimeout(event.reservationId())
+                    .onErrorResume(error -> {
+                        log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
+                        return Mono.empty();
+                    })
+            );
     }
 }

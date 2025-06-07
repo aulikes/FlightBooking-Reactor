@@ -1,7 +1,7 @@
 
 package com.aug.flightbooking.infrastructure.init;
 
-import com.aug.flightbooking.infrastructure.scheduler.ReservationTimeoutScheduler;
+import com.aug.flightbooking.infrastructure.cache.ReservationTimeoutScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

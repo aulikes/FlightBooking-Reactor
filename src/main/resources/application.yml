@@ -98,3 +98,4 @@ app:
   redis:
     reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
     period-flux-seconds: 30 # periodo de ejecución del scheduler
+    key-prefix-reservation-cache: reservation.timeout.

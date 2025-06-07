@@ -2,6 +2,7 @@ package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.port.in.HandleFlightseatRejectedUseCase;
+import com.aug.flightbooking.application.port.out.ReservationCache;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,11 +19,24 @@ import reactor.core.publisher.Mono;
 public class HandleFlightseatRejectedService implements HandleFlightseatRejectedUseCase {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
+    private final ReservationCache reservationCache;
+
     /**
      * Maneja el evento de reserva rechazada y actualiza el estado a REJECTED.
      */
     @Override
     public Mono<Void> handle(FlightseatRejectedEvent event) {
-        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.REJECTED);
+        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.REJECTED)
+                .onErrorResume(error -> {
+                    log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
+                    return Mono.empty();
+                })
+                .then(
+                    reservationCache.cancelTimeout(event.reservationId())
+                        .onErrorResume(error -> {
+                            log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
+                            return Mono.empty();
+                        })
+                );
     }
 }
