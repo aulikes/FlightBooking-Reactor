@@ -1,7 +1,7 @@
-package com.aug.flightbooking.adapter.web.mapper;
+package com.aug.flightbooking.infrastructure.web.mapper;
 
-import com.aug.flightbooking.adapter.web.dto.ReservationRequest;
-import com.aug.flightbooking.adapter.web.dto.ReservationResponse;
+import com.aug.flightbooking.infrastructure.web.dto.ReservationRequest;
+import com.aug.flightbooking.infrastructure.web.dto.ReservationResponse;
 import com.aug.flightbooking.application.command.CreateReservationCommand;
 import com.aug.flightbooking.application.result.ReservationResult;
 import org.mapstruct.Mapper;

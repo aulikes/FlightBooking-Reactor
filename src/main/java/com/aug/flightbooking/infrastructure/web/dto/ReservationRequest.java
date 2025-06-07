@@ -1,4 +1,4 @@
-package com.aug.flightbooking.adapter.web.dto;
+package com.aug.flightbooking.infrastructure.web.dto;
 
 import jakarta.validation.constraints.NotNull;
 
