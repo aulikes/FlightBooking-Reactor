@@ -8,9 +8,17 @@ spring:
   profiles:
     active: dev #dev rabbit kafka
 
-  statemachine:
-    auto-startup: true
-    with-security: false
+#  statemachine:
+#    auto-startup: true
+#    with-security: false
+
+#  data:
+  ##    redis:
+  ##      host: localhost
+  ##      port: 6379
+  ##      timeout: 6000
+  ##      repositories:
+  ##        enabled: false  # no usamos repositorios Spring Data comunes
 
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/flightbooking

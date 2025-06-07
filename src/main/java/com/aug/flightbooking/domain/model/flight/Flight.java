@@ -13,7 +13,7 @@ public class Flight {
     private String flightCode;
     private String origin;
     private String destination;    
-	private final int totalSeats;
+	private int totalSeats;
     private int reservedSeats;
     private LocalDateTime scheduledDeparture;
     private LocalDateTime scheduledArrival;
