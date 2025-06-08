@@ -1,7 +1,7 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
-import com.aug.flightbooking.application.port.in.HandleFlightseatRejectedUseCase;
+import com.aug.flightbooking.application.port.in.FlightseatRejectedEventHandler;
 import com.aug.flightbooking.application.port.out.ReservationCache;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class HandleFlightseatRejectedService implements HandleFlightseatRejectedUseCase {
+public class FlightseatRejectedEventHandlerService implements FlightseatRejectedEventHandler {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
     private final ReservationCache reservationCache;
@@ -27,16 +27,16 @@ public class HandleFlightseatRejectedService implements HandleFlightseatRejected
     @Override
     public Mono<Void> handle(FlightseatRejectedEvent event) {
         return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.REJECTED)
-                .onErrorResume(error -> {
-                    log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
-                    return Mono.empty();
-                })
-                .then(
-                    reservationCache.cancelTimeout(event.reservationId())
-                        .onErrorResume(error -> {
-                            log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
-                            return Mono.empty();
-                        })
-                );
+            .onErrorResume(error -> {
+                log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
+                return Mono.empty();
+            })
+            .then(
+                reservationCache.cancelTimeout(event.reservationId())
+                    .onErrorResume(error -> {
+                        log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
+                        return Mono.empty();
+                    })
+            );
     }
 }

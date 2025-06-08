@@ -1,6 +1,6 @@
 package com.aug.flightbooking.domain.model.flight;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -8,35 +8,54 @@ import java.util.Objects;
  */
 public class Flight {
 
-    private Long id;
-    private Airline airline; // Value Object interno
-    private String flightCode;
-    private String origin;
-    private String destination;    
-	private int totalSeats;
+    private final Long id;
+    private final Airline airline; // Value Object interno
+    private final String flightCode;
+    private final String origin;
+    private final String destination;
+	private final int totalSeats;
     private int reservedSeats;
-    private LocalDateTime scheduledDeparture;
-    private LocalDateTime scheduledArrival;
+    private final Instant scheduledDeparture;
+    private final Instant scheduledArrival;
     private FlightStatus status;
 
     // Constructor privado
-    private Flight(Airline airline, String flightCode, String origin, String destination,
-                   LocalDateTime scheduledDeparture, LocalDateTime scheduledArrival) {
-        this.airline = airline;
-        this.flightCode = flightCode;
-        this.origin = origin;
-        this.destination = destination;
-        this.scheduledDeparture = scheduledDeparture;
-        this.scheduledArrival = scheduledArrival;
-        this.status = FlightStatus.SCHEDULED;
+    private Flight(Long id, Airline airline, String flightCode, String origin, String destination,
+                   int totalSeats, int reservedSeats, Instant scheduledDeparture,
+                   Instant scheduledArrival, FlightStatus status) {
+        this.id = id;
+        this.airline = Objects.requireNonNull(airline, "airline no puede ser null");
+        this.flightCode = Objects.requireNonNull(flightCode, "flightCode no puede ser null");
+        this.origin = Objects.requireNonNull(origin, "origin no puede ser null");
+        this.destination = Objects.requireNonNull(destination, "destination no puede ser null");
+        this.scheduledDeparture = Objects.requireNonNull(scheduledDeparture, "scheduledDeparture no puede ser null");
+        this.scheduledArrival = Objects.requireNonNull(scheduledArrival, "scheduledArrival no puede ser null");
+        this.status = Objects.requireNonNull(status, "status no puede ser null");
+
+        this.totalSeats = totalSeats;
+        this.reservedSeats = reservedSeats;
     }
 
     /**
      * Fábrica para crear un nuevo vuelo programado.
      */
-    public static Flight scheduleFlight(Airline airline, String flightCode, String origin, String destination,
-                                        LocalDateTime scheduledDeparture, LocalDateTime scheduledArrival) {
-        return new Flight(airline, flightCode, origin, destination, scheduledDeparture, scheduledArrival);
+    public static Flight create(Airline airline, String flightCode, String origin, String destination,
+                                int totalSeats, Instant scheduledDeparture, Instant scheduledArrival) {
+
+        return new Flight(null, airline, flightCode, origin, destination, totalSeats, 0, scheduledDeparture,
+                scheduledArrival, FlightStatus.SCHEDULED);
+    }
+
+    /**
+     * Fábrica para construir un vuelo desde base de datos.
+     */
+    public static Flight fromPersistence(Long id, Airline airline, String flightCode,
+                                         String origin, String destination, int totalSeats, int reservedSeats,
+                                         Instant scheduledDeparture, Instant scheduledArrival, FlightStatus status) {
+        if (id == null) throw new IllegalArgumentException("El id no puede ser nulo");
+
+        return new Flight(id, airline, flightCode, origin, destination, totalSeats, reservedSeats,
+                scheduledDeparture, scheduledArrival, status);
     }
 
     /**
@@ -98,10 +117,6 @@ public class Flight {
         return false;
     }
 
-
-
-    // Getters
-
     public Long getId() {
         return id;
     }
@@ -130,11 +145,11 @@ public class Flight {
         return reservedSeats;
     }
 
-    public LocalDateTime getScheduledDeparture() {
+    public Instant getScheduledDeparture() {
         return scheduledDeparture;
     }
 
-    public LocalDateTime getScheduledArrival() {
+    public Instant getScheduledArrival() {
         return scheduledArrival;
     }
 
@@ -145,8 +160,7 @@ public class Flight {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Flight)) return false;
-        Flight flight = (Flight) o;
+        if (!(o instanceof Flight flight)) return false;
         return Objects.equals(id, flight.id);
     }
 

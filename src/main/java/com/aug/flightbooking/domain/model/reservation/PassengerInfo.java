@@ -1,5 +1,7 @@
 package com.aug.flightbooking.domain.model.reservation;
 
+import java.util.Objects;
+
 /**
  * Value Object que representa la información básica del pasajero asociada a una reserva.
  * No tiene identidad propia ni comportamiento, solo contiene datos referenciales.
@@ -10,20 +12,13 @@ public class PassengerInfo {
     private final String documentId;
 
     public PassengerInfo(String fullName, String documentId) {
-        if (fullName == null || fullName.isBlank()) {
-            throw new IllegalArgumentException("El nombre completo no puede estar vacío.");
-        }
-        if (documentId == null || documentId.isBlank()) {
-            throw new IllegalArgumentException("El número de identificación no puede estar vacío.");
-        }
-        this.fullName = fullName;
-        this.documentId = documentId;
+        this.fullName = Objects.requireNonNull(fullName, "El fullName no puede ser nul");
+        this.documentId = Objects.requireNonNull(documentId, "El documentId no puede ser nul");
     }
 
     public String getFullName() {
         return fullName;
     }
-
     public String getDocumentId() {
         return documentId;
     }

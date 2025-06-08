@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 /**
  * Caso de uso para manejar el evento de reserva rechazada.
  */
-public interface HandleFlightseatRejectedUseCase {
+public interface FlightseatRejectedEventHandler {
     Mono<Void> handle(FlightseatRejectedEvent event);
 }

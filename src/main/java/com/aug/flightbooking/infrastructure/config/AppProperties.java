@@ -36,11 +36,15 @@ public class AppProperties {
         @Data
         public static class Producer {
             private String reservationCreatedTopic;
+            private String flightseatConfirmedTopic;
+            private String flightseatRejectedTopic;
         }
 
         @Data
         public static class Consumer {
             private String reservationFlightCreatedGroupId;
+            private String flightseatReservationConfirmedGroupId;
+            private String flightseatReservationRejectedGroupId;
         }
     }
 

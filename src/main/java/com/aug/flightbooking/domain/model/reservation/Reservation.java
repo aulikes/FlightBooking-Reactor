@@ -38,10 +38,6 @@ public class Reservation {
         return new Reservation(null, flightId, passengerInfo, ReservationStatus.CREATED, Instant.now());
     }
 
-    public boolean isCreated(){
-        return status == ReservationStatus.CREATED;
-    }
-
     /**
      * Marca la reserva como confirmada
      */

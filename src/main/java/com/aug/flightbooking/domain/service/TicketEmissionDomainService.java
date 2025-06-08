@@ -7,6 +7,7 @@ import com.aug.flightbooking.domain.model.reservation.ReservationStatus;
 import com.aug.flightbooking.domain.model.flight.FlightStatus;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -63,10 +64,9 @@ public class TicketEmissionDomainService {
 
     /**
      * Valida que el horario actual aún permita emitir el ticket.
-     * (Se asume que se puede emitir hasta 2 horas antes del despegue).
      */
-    private void validateTimingConstraints(LocalDateTime departureTime) {
-        LocalDateTime now = LocalDateTime.now();
+    private void validateTimingConstraints(Instant departureTime) {
+        Instant now = Instant.now();
         Duration diff = Duration.between(now, departureTime);
 
         if (diff.isNegative()) {

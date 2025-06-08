@@ -101,13 +101,16 @@ app:
     period-flux-seconds: 30 # periodo de ejecución del scheduler
     key-prefix-reservation-cache: reservation.timeout.
 
-
   kafka:
     bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación
     orden-consumer-group: orden-consumer-group
 
     producer: # Un topic por cada evento
       reservation-created-topic: reservation.created
+      flightseat-confirmed-topic: flightseat.confirmed
+      flightseat-rejected-topic: flightseat.rejected
 
     consumer:
       reservation-flight-created-groupId: reservation-flight-created
+      flightseat-reservation-confirmed-groupId: flight-reservation-confirmed
+      flightseat-reservation-rejected-groupId: flight-reservation-rejected

@@ -3,6 +3,7 @@ package com.aug.flightbooking.domain.model.checkin;
 import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.domain.service.CheckInValidationDomainService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -37,12 +38,8 @@ public class Ticket {
     /**
      * Intenta realizar el check-in de este tiquete.
      * Utiliza las reglas del dominio para validar si el check-in es posible.
-     *
-     * @param flight Vuelo asociado al tiquete.
-     * @param checkInTime Fecha y hora en la que se desea hacer el check-in.
-     * @param validationService Servicio de validación con reglas del dominio.
      */
-    public void attemptCheckIn(Flight flight, LocalDateTime checkInTime, CheckInValidationDomainService validationService) {
+    public void attemptCheckIn(Flight flight, Instant checkInTime, CheckInValidationDomainService validationService) {
         if (this.status != TicketStatus.EMITTED) {
             throw new IllegalStateException("Solo se puede hacer check-in con tiquetes emitidos.");
         }

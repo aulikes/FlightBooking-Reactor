@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 /**
  * Caso de uso para manejar el evento de reserva confirmada.
  */
-public interface HandleFlightseatConfirmedUseCase {
+public interface FlightseatConfirmedEventHandler {
     Mono<Void> handle(FlightseatConfirmedEvent event);
 }

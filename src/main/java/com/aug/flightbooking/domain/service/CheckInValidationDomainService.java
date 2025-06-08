@@ -3,6 +3,8 @@ package com.aug.flightbooking.domain.service;
 import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.domain.model.checkin.Ticket;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -17,17 +19,12 @@ public class CheckInValidationDomainService {
 
     /**
      * Determina si se puede realizar el check-in para un vuelo en un momento dado.
-     *
-     * @param flight El vuelo correspondiente al tiquete.
-     * @param ticket El tiquete sobre el cual se intenta hacer check-in.
-     * @param checkInTime El momento en que se intenta hacer check-in.
-     * @return true si es permitido, false si está fuera del rango de tiempo.
      */
-    public boolean canCheckIn(Flight flight, Ticket ticket, LocalDateTime checkInTime) {
-        LocalDateTime departureTime = flight.getScheduledDeparture();
+    public boolean canCheckIn(Flight flight, Ticket ticket, Instant checkInTime) {
+        Instant departureTime = flight.getScheduledDeparture();
 
-        LocalDateTime checkInWindowStart = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_ALLOWED);
-        LocalDateTime checkInWindowEnd = departureTime.minusHours(HOURS_BEFORE_DEPARTURE_LIMIT);
+        Instant checkInWindowStart = departureTime.minus(Duration.ofHours(HOURS_BEFORE_DEPARTURE_ALLOWED));
+        Instant checkInWindowEnd = departureTime.minus(Duration.ofHours(HOURS_BEFORE_DEPARTURE_LIMIT));
 
         return !checkInTime.isBefore(checkInWindowStart) && !checkInTime.isAfter(checkInWindowEnd);
     }

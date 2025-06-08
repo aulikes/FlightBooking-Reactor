@@ -4,7 +4,7 @@ public record FlightseatRejectedEvent(Long reservationId, String reason) impleme
 
     @Override
     public String getEventType() {
-        return "flight.reservation.rejected";
+        return "flightseat.rejected";
     }
 
     @Override

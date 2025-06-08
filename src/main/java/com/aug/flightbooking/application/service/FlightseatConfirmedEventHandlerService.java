@@ -1,7 +1,7 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.port.in.HandleFlightseatConfirmedUseCase;
+import com.aug.flightbooking.application.port.in.FlightseatConfirmedEventHandler;
 import com.aug.flightbooking.application.port.out.ReservationCache;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class HandleFlightseatConfirmedService implements HandleFlightseatConfirmedUseCase {
+public class FlightseatConfirmedEventHandlerService implements FlightseatConfirmedEventHandler {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
     private final ReservationCache reservationCache;
