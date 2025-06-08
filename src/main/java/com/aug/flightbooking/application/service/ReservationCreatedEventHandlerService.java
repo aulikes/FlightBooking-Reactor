@@ -3,7 +3,7 @@ package com.aug.flightbooking.application.service;
 import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
 import com.aug.flightbooking.application.event.ReservationCreatedEvent;
 import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
-import com.aug.flightbooking.application.port.in.HandleReservationCreatedUseCase;
+import com.aug.flightbooking.application.port.in.ReservationCreatedEventHandler;
 import com.aug.flightbooking.application.port.out.FlightEventPublisher;
 import com.aug.flightbooking.application.port.out.FlightRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HandleReservationCreatedService implements HandleReservationCreatedUseCase {
+public class ReservationCreatedEventHandlerService implements ReservationCreatedEventHandler {
 
     private final FlightRepository flightRepository;
     private final FlightEventPublisher eventPublisher;

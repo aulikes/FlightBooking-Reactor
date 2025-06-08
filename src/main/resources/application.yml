@@ -58,6 +58,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer # Serializador para la clave del mensaje que se va a enviar
       value-serializer: org.apache.kafka.common.serialization.StringSerializer # Serializador para el valor del mensaje que se va a enviar
 
+---
 
 server:
   port: 8080
@@ -99,3 +100,14 @@ app:
     reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
     period-flux-seconds: 30 # periodo de ejecución del scheduler
     key-prefix-reservation-cache: reservation.timeout.
+
+
+  kafka:
+    bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación
+    orden-consumer-group: orden-consumer-group
+
+    producer: # Un topic por cada evento
+      reservation-created-topic: reservation.created
+
+    consumer:
+      reservation-flight-created-groupId: reservation-flight-created

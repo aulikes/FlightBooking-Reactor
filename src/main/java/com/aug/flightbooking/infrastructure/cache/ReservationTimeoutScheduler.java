@@ -2,13 +2,11 @@
 package com.aug.flightbooking.infrastructure.cache;
 
 import com.aug.flightbooking.application.port.in.FailReservationUseCase;
-import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
-import com.aug.flightbooking.infrastructure.config.ApplicationProperties;
+import com.aug.flightbooking.infrastructure.config.AppProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -20,11 +18,11 @@ import java.time.Duration;
 @Slf4j
 public class ReservationTimeoutScheduler {
 
-    private final ApplicationProperties.Redis properties;
+    private final AppProperties.Redis properties;
     private final FailReservationUseCase failReservationUseCase;
     private Disposable subscription;
 
-    public ReservationTimeoutScheduler(ApplicationProperties properties,
+    public ReservationTimeoutScheduler(AppProperties properties,
                                        FailReservationUseCase failReservationUseCase,
                                        Disposable subscription) {
         this.properties = properties.getRedis();

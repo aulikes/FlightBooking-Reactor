@@ -9,7 +9,7 @@ public record ReservationCreatedEvent(
 
     @Override
     public String getEventType() {
-        return "ReservationCreatedEvent";
+        return "reservation.created";
     }
 
     @Override

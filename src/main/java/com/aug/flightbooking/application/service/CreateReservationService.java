@@ -2,7 +2,7 @@ package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.ReservationCreatedEvent;
 import com.aug.flightbooking.application.port.in.CreateReservationUseCase;
-import com.aug.flightbooking.application.port.out.ReservationEventPublisher;
+import com.aug.flightbooking.application.port.out.ReservationCreatedEventPublisher;
 import com.aug.flightbooking.application.port.out.ReservationRepository;
 import com.aug.flightbooking.application.command.CreateReservationCommand;
 import com.aug.flightbooking.application.port.out.ReservationCache;
@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class CreateReservationService implements CreateReservationUseCase {
 
     private final ReservationRepository reservationRepository;
-    private final ReservationEventPublisher eventPublisher;
+    private final ReservationCreatedEventPublisher eventPublisher;
     private final ReservationCache reservationCache;
 
     @Override
@@ -42,7 +42,7 @@ public class CreateReservationService implements CreateReservationUseCase {
                             saved.getPassengerInfo().getDocumentId()
                     );
                     // 2. De forma asíncrona: publica el evento y envía registro de timeout a Redis
-                    Mono<Void> publish = eventPublisher.publishCreated(event);
+                    Mono<Void> publish = eventPublisher.publish(event);
                     Mono<Void> track = reservationCache.registerTimeout(saved.getId());
                     return Mono.when(
                             publish,

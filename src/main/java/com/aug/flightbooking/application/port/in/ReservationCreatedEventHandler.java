@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 /**
  * Caso de uso para manejar eventos de reserva creada.
  */
-public interface HandleReservationCreatedUseCase {
+public interface ReservationCreatedEventHandler {
     Mono<Void> handle(ReservationCreatedEvent event);
 }

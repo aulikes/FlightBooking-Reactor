@@ -4,7 +4,7 @@ public record FlightseatConfirmedEvent(Long reservationId) implements Integratio
 {
     @Override
     public String getEventType() {
-        return "FlightseatConfirmedEvent";
+        return "flight.reservation.confirmed";
     }
 
     @Override

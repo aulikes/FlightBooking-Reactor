@@ -1,0 +1,40 @@
+package com.aug.flightbooking.infrastructure.persistence.adapter;
+
+import com.aug.flightbooking.application.port.out.ReservationRepository;
+import com.aug.flightbooking.domain.model.reservation.Reservation;
+import com.aug.flightbooking.domain.model.reservation.ReservationStatus;
+import com.aug.flightbooking.infrastructure.persistence.entity.ReservationEntity;
+import com.aug.flightbooking.infrastructure.persistence.mapper.ReservationMapper;
+import com.aug.flightbooking.infrastructure.persistence.repository.R2dbcReservationRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+
+@Component
+@RequiredArgsConstructor
+public class ReservationRepositoryAdapter implements ReservationRepository {
+
+    private final R2dbcReservationRepository repository;
+
+    @Override
+    public Mono<Reservation> save(Reservation reservation) {
+        ReservationEntity entity = ReservationMapper.toEntity(reservation);
+        return repository.save(entity)
+                .map(ReservationMapper::toDomain);
+    }
+
+    @Override
+    public Mono<Reservation> findById(Long id) {
+        return repository.findById(id)
+                .map(ReservationMapper::toDomain);
+    }
+
+    @Override
+    public Flux<Reservation> findReservationsCreatedBefore(Instant threshold) {
+        return repository.findByStatusAndCreatedAtBefore(ReservationStatus.CREATED.name(), threshold)
+                .map(ReservationMapper::toDomain);
+    }
+}

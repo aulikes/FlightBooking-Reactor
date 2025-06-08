@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.cache;
 
 import com.aug.flightbooking.application.port.out.ReservationCache;
-import com.aug.flightbooking.infrastructure.config.ApplicationProperties;
+import com.aug.flightbooking.infrastructure.config.AppProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveValueOperations;
@@ -22,7 +22,7 @@ public class RedisReservationCache implements ReservationCache {
 
     // Cliente para operaciones simples de Redis tipo clave-valor (String -> String)
     private final ReactiveValueOperations<String, String> redisOps;
-    private final ApplicationProperties properties;
+    private final AppProperties properties;
 
     /**
      * Cuando se crea una reserva la registra en Redis con un tiempo de espera,

@@ -4,7 +4,7 @@ public record ReservationFailedEvent(Long reservationId, String reason) implemen
 
     @Override
     public String getEventType() {
-        return "ReservationFailedEvent";
+        return "redis.reservation.failed";
     }
 
     @Override

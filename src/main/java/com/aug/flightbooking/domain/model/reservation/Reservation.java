@@ -25,7 +25,7 @@ public class Reservation {
         this.createdAt = Objects.requireNonNull(createdAt, "El createdAt no puede ser null");
     }
 
-    private static Reservation fromPersistence(
+    public static Reservation fromPersistence(
             Long id, Long flightId, PassengerInfo passengerInfo, ReservationStatus status, Instant createdAt) {
         if (id == null) throw new IllegalArgumentException("El id no puede ser nulo");
         return new Reservation(id, flightId, passengerInfo, status, createdAt);
