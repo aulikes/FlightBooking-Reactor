@@ -1,0 +1,48 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20241106-01
+      author: mike
+      preConditions:
+        - not:
+            - tableExists:
+                tableName: flight
+      changes:
+        - createTable:
+            tableName: flight
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: airline_name
+                  type: VARCHAR(100)
+              - column:
+                  name: airline_code
+                  type: VARCHAR(10)
+              - column:
+                  name: flight_code
+                  type: VARCHAR(20)
+              - column:
+                  name: origin
+                  type: VARCHAR(50)
+              - column:
+                  name: destination
+                  type: VARCHAR(50)
+              - column:
+                  name: total_seats
+                  type: INTEGER
+              - column:
+                  name: reserved_seats
+                  type: INTEGER
+              - column:
+                  name: scheduled_departure
+                  type: TIMESTAMP
+              - column:
+                  name: scheduled_arrival
+                  type: TIMESTAMP
+              - column:
+                  name: status
+                  type: VARCHAR(30)

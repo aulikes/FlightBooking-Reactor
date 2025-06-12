@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reservations")
+@RequestMapping("/api/reservation")
 public class ReservationController {
 
     private final CreateReservationUseCase createReservationUseCase;

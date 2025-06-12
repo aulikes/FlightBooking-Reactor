@@ -1,92 +1,90 @@
-# ✈️ FlightBooking Service - Sistema de Gestión de Reservas de Vuelos
+# Flight Booking Reactive System ✈️
 
-> Proyecto de referencia para arquitecturas modernas basadas en eventos, con enfoque en diseño limpio, programación reactiva y sistemas distribuidos.
+## 🌟 Visión General
+Este proyecto es una **prueba de concepto (POC)** para demostrar un sistema de reserva de vuelos utilizando una arquitectura basada en eventos, totalmente reactiva y distribuida. Aunque no representa un proceso completo en producción, **implementa las piezas clave del dominio**, como creación de reservas, verificación de disponibilidad de asientos, publicación de eventos asincrónicos y manejo de estados con persistencia reactiva.
 
----
+Su propósito es **explorar cómo construir una solución moderna y desacoplada**, aplicando buenas prácticas arquitectónicas, patrones de diseño y tecnologías de última generación como **WebFlux, Reactor Core, Redis y Kafka**.
 
-## 🚀 Descripción General
+## ⚙️ Tecnologías Clave
+- **Spring Boot 3 + WebFlux**
+- **Project Reactor (Reactor Core)**
+- **PostgreSQL (con R2DBC)**
+- **Redis** para estado temporal y control de TTL
+- **Kafka** para eventos distribuidos
+- **Arquitectura Hexagonal (Ports & Adapters)**
+- **Domain-Driven Design (DDD)**
+- **Lombok**
+- **WebTestClient + Mockito** para pruebas
 
-**FlightBooking** es un microservicio desarrollado para gestionar el ciclo de vida de reservas de vuelo, incluyendo validación de asientos, actualización de disponibilidad y publicación de eventos de negocio. El objetivo es ofrecer una base de estudio robusta y profesional que combine:
+## 🧠 Enfoque Arquitectónico
 
-- 🧠 Lógica de negocio clara y desacoplada
-- 🏗️ Arquitectura hexagonal (puertos y adaptadores)
-- 🌀 Programación reactiva end-to-end
-- 📬 Comunicación asíncrona basada en eventos (Kafka)
-- ⚙️ Persistencia reactiva con R2DBC y PostgreSQL
+### ✅ Arquitectura Hexagonal + DDD
+Separación estricta entre:
+- **Dominio puro:** lógica central sin dependencias externas
+- **Aplicación:** casos de uso y orquestación
+- **Infraestructura:** persistencia, colas, Redis, controladores
 
-Este servicio no es una demo más. Fue diseñado y construido como material serio de estudio, ideal para desarrolladores que quieren llevar su nivel al siguiente paso.
+### 🧩 Event-Driven Architecture
+Cada evento (`ReservationCreated`, `FlightSeatConfirmed`, `FlightSeatRejected`) tiene su propio:
+- **Publisher:** encapsula lógica de publicación
+- **Listener:** desacopla y responde de forma reactiva
 
----
+Esto permite trazabilidad, resiliencia y mantenimiento independiente.
 
-## 📚 Lógica del Negocio
+### 🧠 Uso de Redis
+Redis se utiliza como:
+- **Repositorio distribuido temporal** para validaciones por evento
+- Con **TTL configurado**, se garantiza la expiración automática si la reserva no es confirmada
+- Se implementa un patrón **de agregación reactiva temporal distribuida**
 
-### 📌 Flujo principal: **Reserva de vuelo**
+### ⚡ Flujo 100% Asíncrono y No Bloqueante
+Gracias al uso combinado de WebFlux + Reactor Core:
+- No hay bloqueo de hilos
+- Se aprovechan eficientemente los recursos
+- La lógica se suscribe correctamente en todos los puntos críticos (`subscribe()` ubicado solo donde se requiere)
 
-1. **Creación de la reserva**:
-   - Se recibe un `ReservationCreatedEvent`.
-   - Se delega la validación al servicio de vuelo (Flight).
+## 🛫 Flujo de Reserva de Vuelo
+1. El usuario **crea una reserva** → `ReservationCreatedEvent`
+2. Se verifica la disponibilidad de asientos → `FlightSeatConfirmed` o `FlightSeatRejected`
+3. Se actualiza el estado de la reserva
+4. Si no hay respuesta a tiempo → Redis marca como `FAILED`
 
-2. **Validación de disponibilidad**:
-   - Se verifica si hay asientos disponibles.
-   - Si hay cupo, se reserva un asiento (`flight.reserveSeat()`).
-   - Se actualiza el número de asientos disponibles en base de datos.
+## 🔍 Mejores Prácticas Aplicadas
+- Eventos **versionados** y trazables (`traceId`)
+- `IntegrationEventWrapper` como contrato de publicación
+- No se usan eventos genéricos universales
+- Dominios inmutables, controlados mediante **máquina de estados**
+- Separación completa entre **infraestructura y lógica de negocio**
 
-3. **Publicación de eventos**:
-   - Si hay cupo: se publica `FlightSeatConfirmedEvent`.
-   - Si no hay cupo: se publica `FlightSeatRejectedEvent`.
+## 🧪 Pruebas
+- Pruebas unitarias con Mockito
+- Pruebas de integración con WebTestClient
 
-Todo esto ocurre **de forma reactiva**, **sin bloquear hilos** y con una arquitectura desacoplada basada en eventos.
+## ✅ Conclusión
+Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar sistemas distribuidos reactivos en Java. Es ideal para estudios de arquitectura avanzada, diseño de eventos, y adopción de WebFlux en entornos exigentes.
 
----
 
-## 🧱 Arquitectura
 
-- **Arquitectura hexagonal (Ports & Adapters)**: separación entre dominio, aplicación, infraestructura y controladores/eventos.
-- **Bounded Contexts separados**: `reservation` y `flight` no comparten clases. Solo se comunican mediante eventos.
-- **Publicadores e interfaces desacopladas**: cada evento tiene su publisher, versión y contrato.
-- **Event wrapping profesional**: los eventos se envuelven con metadata (`eventType`, `version`, `traceId`, `timestamp`).
+### Arquitectura Hexagonal
 
----
 
-## 🛠️ Tecnologías utilizadas
-
-| Capa        | Tecnología                               |
-|-------------|-------------------------------------------|
-| Lenguaje    | Java 17                                   |
-| Framework   | Spring Boot 3.x                           |
-| Reactive    | Spring WebFlux, Reactor Core              |
-| Persistencia| Spring Data R2DBC, PostgreSQL             |
-| Broker      | Apache Kafka                              |
-| Serialización | Jackson                                 |
-| Build Tool  | Gradle                                    |
-| Gestión de eventos | Topic por evento, sin eventos genéricos |
-
----
-
-## 📂 Estructura del Proyecto
-
-```bash
-com.aug.flightbooking
-├── domain                  # Modelos de dominio (Flight, Airline, etc.)
-├── application
-│   ├── port.in             # Use cases
-│   ├── port.out            # Interfaces de salida (Publisher, Repos)
-│   └── service             # Coordinadores de lógica de negocio
-├── infrastructure
-│   ├── persistence         # Repositorio R2DBC, entidades, mappers
-│   └── messaging           # Kafka publishers, IntegrationEventWrapper
-└── adapters                # Listeners Kafka que llaman a la lógica de negocio
 ```
-
----
-
-## 📈 Puntos fuertes del diseño
-
-- ✅ Cada evento tiene una versión (`v1`) y un contrato específico.
-- ✅ Los eventos nunca se comparten entre bounded contexts.
-- ✅ Los listeners no contienen lógica. Delegan en servicios.
-- ✅ Se usan interfaces para puertos de entrada/salida.
-- ✅ Se utiliza Redis y Kafka con buenas prácticas.
-
----
-
+└── src
+    └── main
+        └── java
+            └── com
+                └── aug
+                    └── flightbooking
+                        ├── application         -> Contiene los casos de uso del negocio, orquestación y lógica de aplicación.
+                        │   ├── handler         -> Maneja eventos del dominio o externos (Listeners).
+                        │   ├── service         -> Casos de uso que procesan comandos o consultas.
+                        │   └── gateway         -> Interfaces que abstraen integraciones con tecnologías externas (ej. Kafka, Redis).
+                        ├── domain              -> Contiene el modelo de dominio puro (entidades, objetos de valor, lógica de negocio).
+                        ├── infrastructure      -> Implementaciones tecnológicas específicas: acceso a BD, Kafka, Redis, etc.
+                        │   ├── repository      -> Adaptadores de persistencia para R2DBC (ej. PostgreSQL).
+                        │   ├── publisher       -> Implementación de publicadores Kafka.
+                        │   ├── listener        -> Adaptadores que consumen eventos de Kafka.
+                        │   └── config          -> Configuraciones generales (Kafka, Redis, Beans).
+                        └── adapter             -> Adaptadores de entrada (ej. API REST Controllers).
+                            └── rest            -> Controladores que exponen endpoints y manejan DTOs.
+```

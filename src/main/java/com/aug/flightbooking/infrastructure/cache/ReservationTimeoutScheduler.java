@@ -12,20 +12,20 @@ import java.time.Duration;
 
 /**
  * Scheduler que verifica periódicamente si una reserva debe marcarse como fallida,
- * pero solo se activa cuando se invoca startScheduler() manualmente.
+ * pero solo se activa cuando se invoca startScheduler() desde AppStartupFinalListener.
  */
 @Component
 @Slf4j
 public class ReservationTimeoutScheduler {
 
-    private final AppProperties.Redis properties;
+    private final AppProperties.Redis.RedisReservation properties;
     private final FailReservationUseCase failReservationUseCase;
     private Disposable subscription;
 
     public ReservationTimeoutScheduler(AppProperties properties,
                                        FailReservationUseCase failReservationUseCase,
                                        Disposable subscription) {
-        this.properties = properties.getRedis();
+        this.properties = properties.getRedis().getRedisReservation();
         this.failReservationUseCase = failReservationUseCase;
         this.subscription = subscription;
     }

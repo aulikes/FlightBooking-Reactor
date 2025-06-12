@@ -6,47 +6,33 @@ spring:
   application:
     name: flightbooking
   profiles:
-    active: dev #dev rabbit kafka
+    active: dev #dev kafka
 
 #  statemachine:
 #    auto-startup: true
 #    with-security: false
 
-#  data:
-  ##    redis:
-  ##      host: localhost
-  ##      port: 6379
-  ##      timeout: 6000
-  ##      repositories:
-  ##        enabled: false  # no usamos repositorios Spring Data comunes
-
+  # Conexión de la aplicación con PostgreSQL
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/flightbooking
-    username: your_user
-    password: your_password
+    username: devuser
+    password: devpass
 
-  datasource:
-    url: jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+  # Configuración de Liquidbase
+  liquibase:
+    enabled: true
+    change-log: classpath:liquibase/changelog/changelog-master.yaml
 
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: false
+  #Configuración de Redis para alto rendimiento
+  redis:
+    lettuce:
+      pool:                # En sistemas reactivos es mejor tener pocas y eficientes conexiones.
+        enabled: true
+        max-active: 64     # Máximo de conexiones activas
+        max-idle: 16       # Conexiones en espera (sin uso)
+        min-idle: 4        # Mínimo para mantener caliente
+        max-wait: 5000ms   # Espera máxima por conexión
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
 
   kafka:
     bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación
@@ -97,9 +83,22 @@ resilience4j:
 
 app:
   redis:
-    reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
-    period-flux-seconds: 30 # periodo de ejecución del scheduler
-    key-prefix-reservation-cache: reservation.timeout.
+    timeout: 6000
+    repositories:
+      enabled: false  # no usamos repositorios Spring Data comunes
+
+    redis-reservation:
+      host: localhost
+      port: 6379
+      database: 0   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
+      reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
+      period-flux-seconds: 30 # periodo de ejecución del scheduler
+      key-prefix-reservation-cache: reservation.timeout.
+
+    redis-flight:
+      host: localhost
+      port: 6379
+      database: 1   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
 
   kafka:
     bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación

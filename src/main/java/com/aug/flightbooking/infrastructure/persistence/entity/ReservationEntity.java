@@ -8,7 +8,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.time.Instant;
 
 @Data
-@Table("reservations")
+@Table("reservation")
 public class ReservationEntity {
 
     @Id

@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: liquibase/changelog/changesets/V1_create_flight_table.yaml
+  - include:
+      file: liquibase/changelog/changesets/V2_create_reservation_table.yaml
+  - include:
+      file: liquibase/changelog/changesets/V2_create_ticket_table.yaml

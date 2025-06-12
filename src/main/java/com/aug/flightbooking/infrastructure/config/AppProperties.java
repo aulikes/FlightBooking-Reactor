@@ -17,14 +17,27 @@ public class AppProperties {
 
     @Data
     public static class Redis {
-        private long reservationTimeoutSeconds;
-        private long periodFluxSeconds;
-        private String keyPrefixReservationCache;
-    }
+        private long timeout;
+        private RedisReservation redisReservation;
+        private RedisFlight redisFlight;
 
-    // -----------------------------------------------
-    // Subclases anidadas
-    // -----------------------------------------------
+        @Data
+        public static class RedisReservation {
+            private String host;
+            private int port;
+            private int database;
+            private long reservationTimeoutSeconds;
+            private long periodFluxSeconds;
+            private String keyPrefixReservationCache;
+        }
+
+        @Data
+        public static class RedisFlight {
+            private String host;
+            private int port;
+            private int database;
+        }
+    }
 
     @Data
     public static class Kafka {

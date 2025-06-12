@@ -1,8 +1,6 @@
-package com.aug.flightbooking.domain.model.checkin;
+package com.aug.flightbooking.domain.model.ticket;
 
-import com.aug.flightbooking.domain.model.flight.Flight;
-import com.aug.flightbooking.domain.service.CheckInValidationDomainService;
-
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -13,17 +11,20 @@ import java.time.LocalDateTime;
 public class Ticket {
 
     private Long id;
-    private Long reservationId;
-    private Long flightId;
-    private LocalDateTime issuedAt;
+    private final Long reservationId;
+    private final Instant issuedAt;
     private TicketStatus status;
+
+    // Margen permitido para check-in: desde 24h antes hasta 2h antes del vuelo
+    private static final int HOURS_BEFORE_DEPARTURE_ALLOWED = 24;
+    private static final int HOURS_BEFORE_DEPARTURE_LIMIT = 2;
 
     /**
      * Constructor privado para forzar el uso del método de fábrica estático.
      */
-    private Ticket(Long reservationId, Long flightId, TicketStatus status, LocalDateTime issuedAt) {
+    private Ticket(Long id, Long reservationId, TicketStatus status, Instant issuedAt) {
+        this.id = id;
         this.reservationId = reservationId;
-        this.flightId = flightId;
         this.status = status;
         this.issuedAt = issuedAt;
     }
@@ -32,22 +33,26 @@ public class Ticket {
      * Crea un nuevo tiquete emitido, marcando su estado inicial como EMITTED.
      */
     public static Ticket create(Long reservationId, Long flightId, LocalDateTime issuedAt) {
-        return new Ticket(reservationId, flightId, TicketStatus.EMITTED, issuedAt);
+        return new Ticket(null, reservationId, TicketStatus.EMITTED, Instant.now());
+    }
+
+    public static Ticket fromPersistence(Long id, Long reservationId,
+        TicketStatus ticketStatus, Instant issuedAt) {
+        if (id == null) throw new IllegalArgumentException("El id no puede ser nulo");
+        return new Ticket(id, reservationId, ticketStatus, issuedAt);
     }
 
     /**
      * Intenta realizar el check-in de este tiquete.
      * Utiliza las reglas del dominio para validar si el check-in es posible.
      */
-    public void attemptCheckIn(Flight flight, Instant checkInTime, CheckInValidationDomainService validationService) {
+    public void attemptCheckIn(Instant departureTime, Instant checkInTime) {
         if (this.status != TicketStatus.EMITTED) {
             throw new IllegalStateException("Solo se puede hacer check-in con tiquetes emitidos.");
         }
-
-        if (!validationService.canCheckIn(flight, this, checkInTime)) {
+        if (!canCheckIn(departureTime, checkInTime)) {
             throw new IllegalStateException("No se puede hacer check-in en este momento.");
         }
-
         this.status = TicketStatus.CHECKED_IN;
     }
 
@@ -58,7 +63,6 @@ public class Ticket {
         if (this.status != TicketStatus.CHECKED_IN) {
             throw new IllegalStateException("Solo se puede usar un tiquete que ya hizo check-in.");
         }
-
         this.status = TicketStatus.USED;
     }
 
@@ -73,7 +77,15 @@ public class Ticket {
         this.status = TicketStatus.CANCELLED;
     }
 
-    // Getters necesarios para lectura o persistencia
+
+    /**
+     * Determina si se puede realizar el check-in para un vuelo en un momento dado.
+     */
+    private boolean canCheckIn(Instant departureTime, Instant checkInTime) {
+        Instant checkInWindowStart = departureTime.minus(Duration.ofHours(HOURS_BEFORE_DEPARTURE_ALLOWED));
+        Instant checkInWindowEnd = departureTime.minus(Duration.ofHours(HOURS_BEFORE_DEPARTURE_LIMIT));
+        return !checkInTime.isBefore(checkInWindowStart) && !checkInTime.isAfter(checkInWindowEnd);
+    }
 
     public Long getId() {
         return id;
@@ -83,11 +95,7 @@ public class Ticket {
         return reservationId;
     }
 
-    public Long getFlightId() {
-        return flightId;
-    }
-
-    public LocalDateTime getIssuedAt() {
+    public Instant getIssuedAt() {
         return issuedAt;
     }
 
