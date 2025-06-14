@@ -25,7 +25,6 @@ public class FailReservationService implements FailReservationUseCase {
 
     @Override
     public Mono<Void> failReservations(long timeSeconds) {
-
         Instant expirationThreshold = Instant.now().minusSeconds(timeSeconds);
         return reservationRepository.findReservationsCreatedBefore(expirationThreshold)
             .flatMap(reservation -> {
@@ -35,7 +34,7 @@ public class FailReservationService implements FailReservationUseCase {
                     .flatMap(cachedValue -> {
                         if (cachedValue != null) { // Si existe en caché, cambia el estado
                             return reservationStatusUpdater.updateStatus(
-                                    reservationId, ReservationStatusAction.FAILED);
+                                    reservation, ReservationStatusAction.FAILED);
                         } else {
                             return Mono.empty(); // No hacer nada si no está en cache
                         }

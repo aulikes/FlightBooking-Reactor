@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  */
 public class Ticket {
 
-    private Long id;
+    private final Long id;
     private final Long reservationId;
     private final Instant issuedAt;
     private TicketStatus status;

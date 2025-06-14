@@ -39,6 +39,13 @@ public class Reservation {
     }
 
     /**
+     * Marca la reserva como pendiente
+     */
+    protected void markAsPending(){
+        changeStatus(ReservationStatus.PENDING);
+    }
+
+    /**
      * Marca la reserva como confirmada
      */
     protected void markAsConfirmed(){

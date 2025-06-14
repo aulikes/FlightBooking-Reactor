@@ -11,10 +11,10 @@ Su propósito es **explorar cómo construir una solución moderna y desacoplada*
 - **PostgreSQL (con R2DBC)**
 - **Redis** para estado temporal y control de TTL
 - **Kafka** para eventos distribuidos
+- **Liquibase** con scripts en formato YAML para control de versiones de base de datos
 - **Arquitectura Hexagonal (Ports & Adapters)**
 - **Domain-Driven Design (DDD)**
 - **Lombok**
-- **WebTestClient + Mockito** para pruebas
 
 ## 🧠 Enfoque Arquitectónico
 
@@ -25,7 +25,7 @@ Separación estricta entre:
 - **Infraestructura:** persistencia, colas, Redis, controladores
 
 ### 🧩 Event-Driven Architecture
-Cada evento (`ReservationCreated`, `FlightSeatConfirmed`, `FlightSeatRejected`) tiene su propio:
+Cada evento tiene su propio:
 - **Publisher:** encapsula lógica de publicación
 - **Listener:** desacopla y responde de forma reactiva
 
@@ -36,6 +36,11 @@ Redis se utiliza como:
 - **Repositorio distribuido temporal** para validaciones por evento
 - Con **TTL configurado**, se garantiza la expiración automática si la reserva no es confirmada
 - Se implementa un patrón **de agregación reactiva temporal distribuida**
+
+### 🎫 Flujo de Emisión de Ticket y Check-In (NUEVO)
+- Cuando una reserva es confirmada (`ReservationConfirmedEvent`), se crea automáticamente un **Ticket** con su estado inicial.
+- El usuario puede realizar **Check-in**, el cual es validado internamente por el estado del `Ticket`.
+- Todo esto se implementa mediante casos de uso reactivos, eventos asincrónicos y un **modelo de dominio rico** basado en máquina de estados.
 
 ### ⚡ Flujo 100% Asíncrono y No Bloqueante
 Gracias al uso combinado de WebFlux + Reactor Core:
@@ -48,6 +53,8 @@ Gracias al uso combinado de WebFlux + Reactor Core:
 2. Se verifica la disponibilidad de asientos → `FlightSeatConfirmed` o `FlightSeatRejected`
 3. Se actualiza el estado de la reserva
 4. Si no hay respuesta a tiempo → Redis marca como `FAILED`
+5. Si se confirma la reserva → se crea automáticamente un **Ticket**
+6. El usuario puede luego hacer **Check-in**
 
 ## 🔍 Mejores Prácticas Aplicadas
 - Eventos **versionados** y trazables (`traceId`)
@@ -55,18 +62,15 @@ Gracias al uso combinado de WebFlux + Reactor Core:
 - No se usan eventos genéricos universales
 - Dominios inmutables, controlados mediante **máquina de estados**
 - Separación completa entre **infraestructura y lógica de negocio**
-
-## 🧪 Pruebas
-- Pruebas unitarias con Mockito
-- Pruebas de integración con WebTestClient
+- **Value Objects** y entidades con responsabilidad encapsulada
+- Separación entre `command`, `use case`, `controller`, `publisher`, `listener`
 
 ## ✅ Conclusión
 Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar sistemas distribuidos reactivos en Java. Es ideal para estudios de arquitectura avanzada, diseño de eventos, y adopción de WebFlux en entornos exigentes.
 
+---
 
-
-### Arquitectura Hexagonal
-
+## 🗂️ Estructura de Proyecto: Arquitectura Hexagonal
 
 ```
 └── src
@@ -75,16 +79,16 @@ Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar
             └── com
                 └── aug
                     └── flightbooking
-                        ├── application         -> Contiene los casos de uso del negocio, orquestación y lógica de aplicación.
-                        │   ├── handler         -> Maneja eventos del dominio o externos (Listeners).
-                        │   ├── service         -> Casos de uso que procesan comandos o consultas.
-                        │   └── gateway         -> Interfaces que abstraen integraciones con tecnologías externas (ej. Kafka, Redis).
-                        ├── domain              -> Contiene el modelo de dominio puro (entidades, objetos de valor, lógica de negocio).
-                        ├── infrastructure      -> Implementaciones tecnológicas específicas: acceso a BD, Kafka, Redis, etc.
-                        │   ├── repository      -> Adaptadores de persistencia para R2DBC (ej. PostgreSQL).
-                        │   ├── publisher       -> Implementación de publicadores Kafka.
-                        │   ├── listener        -> Adaptadores que consumen eventos de Kafka.
-                        │   └── config          -> Configuraciones generales (Kafka, Redis, Beans).
-                        └── adapter             -> Adaptadores de entrada (ej. API REST Controllers).
-                            └── rest            -> Controladores que exponen endpoints y manejan DTOs.
+                        ├── application         -> Casos de uso, orquestación, publicación y consumo de eventos
+                        │   ├── handler         -> Listeners reactivos de eventos Kafka
+                        │   ├── service         -> Lógica de casos de uso: crear reserva, check-in, emitir ticket
+                        │   └── gateway         -> Interfaces que abstraen Kafka, Redis, y persistencia
+                        ├── domain              -> Entidades puras (Reservation, Ticket), Value Objects, lógica de negocio
+                        ├── infrastructure      -> Implementaciones concretas (R2DBC, Kafka, Redis)
+                        │   ├── repository      -> Persistencia reactiva (PostgreSQL)
+                        │   ├── publisher       -> Publicación de eventos Kafka
+                        │   ├── listener        -> Adaptadores de eventos entrantes
+                        │   └── config          -> Configuración de Beans, Kafka, Redis
+                        └── adapter
+                            └── rest            -> Controladores WebFlux (API REST reactiva)
 ```

@@ -9,6 +9,7 @@ import com.aug.flightbooking.application.port.out.ReservationCache;
 import com.aug.flightbooking.application.result.ReservationResult;
 import com.aug.flightbooking.domain.model.reservation.PassengerInfo;
 import com.aug.flightbooking.domain.model.reservation.Reservation;
+import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -23,6 +24,7 @@ public class CreateReservationService implements CreateReservationUseCase {
     private final ReservationRepository reservationRepository;
     private final ReservationCreatedEventPublisher eventPublisher;
     private final ReservationCache reservationCache;
+    private final ReservationStatusUpdater reservationStatusUpdater;
 
     @Override
     public Mono<ReservationResult> createReservation(CreateReservationCommand command) {
@@ -33,29 +35,36 @@ public class CreateReservationService implements CreateReservationUseCase {
         );
 
         return reservationRepository.save(reservation)
-                .flatMap(saved -> {
-                    // 1. Publicar evento ReservationCreated
-                    ReservationCreatedEvent event = new ReservationCreatedEvent(
-                            saved.getId(),
-                            saved.getFlightId(),
-                            saved.getPassengerInfo().getFullName(),
-                            saved.getPassengerInfo().getDocumentId()
-                    );
-                    // 2. De forma asíncrona: publica el evento y envía registro de timeout a Redis
-                    Mono<Void> publish = eventPublisher.publish(event);
-                    Mono<Void> track = reservationCache.registerTimeout(saved.getId());
-                    return Mono.when(
-                            publish,
-                            track
-                    ).thenReturn(saved);
+            .flatMap(saved -> {
+                // 1. Crear el evento
+                ReservationCreatedEvent event = new ReservationCreatedEvent(
+                      saved.getId(),
+                      saved.getFlightId(),
+                      saved.getPassengerInfo().getFullName(),
+                      saved.getPassengerInfo().getDocumentId()
+                );
+                // 2. De forma asíncrona: publica el evento y envía registro de timeout a Redis
+                Mono<Void> publish = eventPublisher.publish(event);
+                Mono<Void> track = reservationCache.registerTimeout(saved.getId());
+
+                // 3. Esperar a que ambos terminen, luego actualizar estado a PENDING
+                return Mono.when(publish, track)
+                        //Esperamos que ambos terminen con Exito, y guardamos el nuevo estado
+                        .then(reservationStatusUpdater.updateStatus(
+                                saved,
+                                ReservationStatusAction.PENDING
+                        ))
+                        // En este caso Then es un estado opcional, se puede quitar pero no se hace el updateStatus
+                        .thenReturn(saved);
                 })
-                .map(saved -> new ReservationResult(
-                        saved.getId(),
-                        saved.getFlightId(),
-                        saved.getPassengerInfo().getFullName(),
-                        saved.getPassengerInfo().getDocumentId(),
-                        saved.getStatus().name(),
-                        saved.getCreatedAt()
-                ));
+
+            .map(saved -> new ReservationResult(
+                    saved.getId(),
+                    saved.getFlightId(),
+                    saved.getPassengerInfo().getFullName(),
+                    saved.getPassengerInfo().getDocumentId(),
+                    saved.getStatus().name(),
+                    saved.getCreatedAt()
+            ));
     }
 }

@@ -15,14 +15,14 @@ import javax.sql.DataSource;
 @RequiredArgsConstructor
 public class JdbcDataSourceConfig {
 
-  @Value("${spring.r2dbc.url}")
-  private final String url;
+  @Value("${spring.r2dbc.urlJdbc}")
+  private String url;
 
   @Value("${spring.r2dbc.username}")
-  private final String usr;
+  private String usr;
 
   @Value("${spring.r2dbc.password}")
-  private final String psw;
+  private String psw;
 
   @Bean
   public DataSource dataSource() {

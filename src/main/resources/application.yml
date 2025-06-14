@@ -14,6 +14,7 @@ spring:
 
   # Conexión de la aplicación con PostgreSQL
   r2dbc:
+    urlJdbc: jdbc:postgresql://localhost:5432/flightbooking
     url: r2dbc:postgresql://localhost:5432/flightbooking
     username: devuser
     password: devpass
@@ -106,10 +107,12 @@ app:
 
     producer: # Un topic por cada evento
       reservation-created-topic: reservation.created
+      reservation-confirmed-topic: reservation.confirmed
       flightseat-confirmed-topic: flightseat.confirmed
       flightseat-rejected-topic: flightseat.rejected
 
     consumer:
       reservation-flight-created-groupId: reservation-flight-created
+      reservation-ticket-confirmed-groupId: reservation-ticket-confirmed
       flightseat-reservation-confirmed-groupId: flight-reservation-confirmed
       flightseat-reservation-rejected-groupId: flight-reservation-rejected

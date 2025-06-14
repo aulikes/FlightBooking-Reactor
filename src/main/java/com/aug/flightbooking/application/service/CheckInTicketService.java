@@ -25,20 +25,15 @@ public class CheckInTicketService implements CheckInTicketUseCase {
     public Mono<Void> checkIn(CreateCheckInCommand command) {
         return ticketRepository.findById(command.ticketId())
             .switchIfEmpty(Mono.error(new IllegalArgumentException("Ticket no encontrado: " + command.ticketId())))
-            .flatMap(ticket -> {
-                    Instant instant = Instant.ofEpochMilli(command.millisecondInstant());
-                    return tryCheckIn(ticket, instant);
+            .flatMap(ticket -> Mono.defer(() -> {
+                try {
+                    Instant departureTime = Instant.ofEpochMilli(command.millisecondInstant());
+                    ticket.attemptCheckIn(departureTime, Instant.now());
+                    return ticketRepository.save(ticket).then();
+                } catch (Exception ex) {
+                    log.warn("Check-in inválido para ticket {}: {}", ticket.getId(), ex.getMessage());
+                    return Mono.error(ex);
                 }
-            );
-    }
-
-    private Mono<Void> tryCheckIn(Ticket ticket, Instant departureTime) {
-        try {
-            ticket.attemptCheckIn(departureTime, Instant.now());
-            return ticketRepository.save(ticket).then();
-        } catch (Exception ex) {
-            log.warn("Check-in inválido para ticket {}: {}", ticket.getId(), ex.getMessage());
-            return Mono.error(ex);
-        }
+            }));
     }
 }

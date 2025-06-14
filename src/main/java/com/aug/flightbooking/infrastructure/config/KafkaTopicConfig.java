@@ -20,4 +20,19 @@ public class KafkaTopicConfig {
         return TopicBuilder.name(producer.getReservationCreatedTopic()).partitions(1).replicas(1).build();
     }
 
+    @Bean
+    public NewTopic reservationConfirmedTopic() {
+        return TopicBuilder.name(producer.getReservationConfirmedTopic()).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic flightseatConfirmedTopic() {
+        return TopicBuilder.name(producer.getFlightseatConfirmedTopic()).partitions(1).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic flightseatRejectedTopic() {
+        return TopicBuilder.name(producer.getFlightseatRejectedTopic()).partitions(1).replicas(1).build();
+    }
+
 }

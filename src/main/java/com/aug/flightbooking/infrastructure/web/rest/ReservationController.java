@@ -18,16 +18,16 @@ import reactor.core.publisher.Mono;
 public class ReservationController {
 
     private final CreateReservationUseCase createReservationUseCase;
-    private final ReservationCreateMapper reservationCreateMap;
+    private final ReservationCreateMapper mapper;
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid  @RequestBody ReservationRequest reques) {
         return createReservationUseCase
-                .createReservation(reservationCreateMap.toCommand(reques))
+                .createReservation(mapper.toCommand(reques))
                 .map(
                         r -> ResponseEntity.ok()
-                                .body(reservationCreateMap.toResponse(r))
+                                .body(mapper.toResponse(r))
                 ).defaultIfEmpty(ResponseEntity.internalServerError().build());
     }
 }

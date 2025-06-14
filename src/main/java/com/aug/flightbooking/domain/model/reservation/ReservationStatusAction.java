@@ -7,6 +7,12 @@ import com.aug.flightbooking.domain.exception.ReservationChangeStatusException;
  * De esta manera los cambios de estado no son públicos y se deben realizar por este medio, para mejor control del dominio
  */
 public enum ReservationStatusAction {
+    PENDING {
+        @Override
+        public void apply(Reservation reservation) throws ReservationChangeStatusException {
+            reservation.markAsPending();
+        }
+    },
     CONFIRMED {
         @Override
         public void apply(Reservation reservation) throws ReservationChangeStatusException {

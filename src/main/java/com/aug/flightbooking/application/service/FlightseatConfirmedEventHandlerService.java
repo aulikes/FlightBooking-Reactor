@@ -1,8 +1,10 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
+import com.aug.flightbooking.application.event.ReservationConfirmedEvent;
 import com.aug.flightbooking.application.port.in.FlightseatConfirmedEventHandler;
 import com.aug.flightbooking.application.port.out.ReservationCache;
+import com.aug.flightbooking.application.port.out.ReservationConfirmedEventPublisher;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import reactor.core.publisher.Mono;
 public class FlightseatConfirmedEventHandlerService implements FlightseatConfirmedEventHandler {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
+    private final ReservationConfirmedEventPublisher ReservationConfirmedEventPublisher;
     private final ReservationCache reservationCache;
 
     /**
@@ -32,11 +35,18 @@ public class FlightseatConfirmedEventHandlerService implements FlightseatConfirm
                 return Mono.empty();
             })
             .then(
-                reservationCache.cancelTimeout(event.reservationId())
-                    .onErrorResume(error -> {
-                        log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
-                        return Mono.empty();
+                Mono.when(
+                    reservationCache.cancelTimeout(event.reservationId())
+                        .onErrorResume(error -> {
+                            log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
+                            return Mono.empty();
+                        }),
+                    ReservationConfirmedEventPublisher.publish(new ReservationConfirmedEvent(event.reservationId()))
+                        .onErrorResume(error -> {
+                            log.error("Error publicando evento", error);
+                            return Mono.empty();
                     })
+                )
             );
     }
 }
