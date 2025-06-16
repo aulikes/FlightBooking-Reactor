@@ -36,7 +36,7 @@ public class RedisConfig {
   }
 
   /**
-   * Crea el template para Redis de VUELOS (flights).
+   * Crea el template para Redis de VUELOS (flights), utilizado para la seguridad de las IPs del webHook
    * Se conecta a host, puerto y base lógica definidos para ese contexto.
    */
   @Bean("flightRedisTemplate")

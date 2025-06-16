@@ -13,7 +13,7 @@
     </appender>
 
     <!-- Mostrar DEBUG solo del código -->
-    <logger name="com.aug.ecommerce" level="DEBUG"/>
+    <logger name="com.aug.flightbooking" level="DEBUG"/>
 
     <!-- Ocultar DEBUG de Spring Boot -->
     <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger" level="OFF"/>
