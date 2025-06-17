@@ -24,7 +24,20 @@ Separación estricta entre:
 - **Aplicación:** casos de uso y orquestación
 - **Infraestructura:** persistencia, colas, Redis, controladores
 
-### 🧩 Event-Driven Architecture
+### 🧩 Event-Driven Architecture 
+
+Cada evento tiene su propio:
+
+- **Publisher**: encapsula la lógica de publicación, ahora implementado 100% con `KafkaSender` de **Reactor Kafka**, sin romper el flujo reactivo.
+- **Listener**: desacopla y responde de forma no bloqueante con `KafkaReceiver`, evitando el uso de `@KafkaListener` imperativo.
+
+Además:
+
+- Se creó una **fábrica de KafkaSender y KafkaReceiver** (`KafkaSenderFactory`, `KafkaReceiverFactory`) que permite configurar dinamicamente productores y consumidores sin definir beans individuales por evento.
+- La (de)serialización se maneja con clases reactivas (`ReactiveJsonEncoder`, `ReactiveJsonDecoder`), eliminando llamadas bloqueantes.
+- Se evita el uso de `@PostConstruct` y se emplea `ApplicationReadyEvent` sólo donde estrictamente necesario, o se suscriben los `KafkaReceiver` directamente en cada clase.
+- Todos los `Publisher` y `Listener` fueron refactorizados para usar `Mono<Void>` como contrato uniforme.
+
 Cada evento tiene su propio:
 - **Publisher:** encapsula lógica de publicación
 - **Listener:** desacopla y responde de forma reactiva

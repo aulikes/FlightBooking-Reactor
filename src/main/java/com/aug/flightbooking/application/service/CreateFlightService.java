@@ -19,7 +19,7 @@ public class CreateFlightService implements CreateFlightUseCase {
     private final FlightRepository flightRepository;
 
     @Override
-    public Mono<Void> create(CreateFlightCommand command) {
+    public Mono<Flight> create(CreateFlightCommand command) {
 
         Flight flight = Flight.create(
                 new Airline(command.airlineName(), command.airlineCode()),
@@ -30,7 +30,7 @@ public class CreateFlightService implements CreateFlightUseCase {
                 command.departureDate(),
                 command.arrivalDate()
         );
-        return flightRepository.save(flight).then();
+        return flightRepository.save(flight);
     }
 }
 

@@ -22,9 +22,9 @@ public class ReservationController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid  @RequestBody ReservationRequest reques) {
+    public Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid  @RequestBody ReservationRequest request) {
         return createReservationUseCase
-                .createReservation(mapper.toCommand(reques))
+                .createReservation(mapper.toCommand(request))
                 .map(
                         r -> ResponseEntity.ok()
                                 .body(mapper.toResponse(r))

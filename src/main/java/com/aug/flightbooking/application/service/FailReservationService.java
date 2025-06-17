@@ -26,6 +26,7 @@ public class FailReservationService implements FailReservationUseCase {
     @Override
     public Mono<Void> failReservations(long timeSeconds) {
         Instant expirationThreshold = Instant.now().minusSeconds(timeSeconds);
+        log.debug("Ejecutando failReservations en Instant: {}", expirationThreshold);
         return reservationRepository.findReservationsCreatedBefore(expirationThreshold)
             .flatMap(reservation -> {
                 Long reservationId = reservation.getId();

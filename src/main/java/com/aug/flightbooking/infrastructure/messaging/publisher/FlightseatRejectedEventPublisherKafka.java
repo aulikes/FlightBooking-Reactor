@@ -3,8 +3,8 @@ package com.aug.flightbooking.infrastructure.messaging.publisher;
 import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.port.out.FlightseatRejectedEventPublisher;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
+import com.aug.flightbooking.infrastructure.config.KafkaSenderFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonEncoder;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
@@ -13,18 +13,23 @@ import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class FlightseatRejectedEventPublisherKafka implements FlightseatRejectedEventPublisher {
 
     private final KafkaSender<String, byte[]> kafkaSender;
-    private final AppProperties properties;
+    private final AppProperties.Kafka.Producer properties;
     private final ReactiveJsonEncoder encoder;
+
+    public FlightseatRejectedEventPublisherKafka(AppProperties properties, ReactiveJsonEncoder encoder) {
+        this.encoder = encoder;
+        this.properties = properties.getKafka().getProducer();
+        this.kafkaSender = KafkaSenderFactory.createSender(properties.getKafka().getBootstrapServers());
+    }
 
     @Override
     public Mono<Void> publish(FlightseatRejectedEvent event) {
         String key = event.getTraceId();
-        String topic = properties.getKafka().getProducer().getFlightseatRejectedTopic();
+        String topic = properties.getFlightseatRejectedTopic();
 
         return encoder.encode(event)
                 .map(payload -> {

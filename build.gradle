@@ -56,7 +56,7 @@ dependencies {
 
 	//Kafka
 	implementation 'io.projectreactor.kafka:reactor-kafka:1.3.22'
-	implementation 'org.springframework.kafka:spring-kafka'
+//	implementation 'org.springframework.kafka:spring-kafka'
 
 	//StateMachine
 	implementation 'org.springframework.statemachine:spring-statemachine-starter:3.2.0'
