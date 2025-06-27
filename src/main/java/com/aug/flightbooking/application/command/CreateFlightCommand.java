@@ -9,6 +9,7 @@ public record CreateFlightCommand(
         String origin,
         String destination,
         int totalSeats,
+        int reservedSeats,
         Instant departureDate,
         Instant arrivalDate
 ) {}

@@ -2,10 +2,8 @@ package com.aug.flightbooking.infrastructure.web.rest;
 
 import com.aug.flightbooking.application.command.CreateFlightCommand;
 import com.aug.flightbooking.application.port.in.CreateFlightUseCase;
-import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateRequest;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateResponse;
-import com.aug.flightbooking.infrastructure.web.dto.ReservationResponse;
 import com.aug.flightbooking.infrastructure.web.mapper.FlightCreateMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

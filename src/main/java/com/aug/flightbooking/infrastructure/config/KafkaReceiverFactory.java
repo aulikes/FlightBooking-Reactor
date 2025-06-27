@@ -11,14 +11,36 @@ import java.util.Map;
 
 public class KafkaReceiverFactory {
 
+    /**
+     * Crea un KafkaReceiver configurado para procesamiento manual de offset.
+     * @param bootstrapServers dirección del broker Kafka
+     * @param topic nombre del topic a suscribirse
+     * @param groupId identificador del grupo de consumidor
+     * @return instancia de KafkaReceiver lista para recibir mensajes
+     */
     public static KafkaReceiver<String, byte[]> createReceiver(String bootstrapServers, String topic, String groupId) {
         Map<String, Object> props = Map.of(
+                // Dirección del broker Kafka
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
+
+                // Deserializadores
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class,
+
+                // Grupo de consumidor
                 ConsumerConfig.GROUP_ID_CONFIG, groupId,
+
+                // No hacer commit automático de offsets
+                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false,
+
+                // Si no hay offset almacenado, leer desde el inicio del log
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
-                ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false
+
+                // Máximo de registros por poll (performance)
+                ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100,
+
+                // Solo leer mensajes que ya hayan sido "committed" si el productor es transaccional
+                ConsumerConfig.ISOLATION_LEVEL_CONFIG, "read_committed"
         );
 
         ReceiverOptions<String, byte[]> options = ReceiverOptions.<String, byte[]>create(props)

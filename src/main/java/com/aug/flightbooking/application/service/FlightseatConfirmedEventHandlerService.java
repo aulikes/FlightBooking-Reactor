@@ -25,7 +25,7 @@ public class FlightseatConfirmedEventHandlerService implements FlightseatConfirm
     private final ReservationCache reservationCache;
 
     /**
-     * Maneja el evento de reserva confirmada y actualiza el estado a CONFIRMED.
+     * Maneja el evento de asiento confirmado y actualiza el estado de la reserva a CONFIRMED.
      */
     @Override
     public Mono<Void> handle(FlightseatConfirmedEvent event) {

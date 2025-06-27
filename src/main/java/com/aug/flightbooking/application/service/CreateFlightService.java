@@ -27,6 +27,7 @@ public class CreateFlightService implements CreateFlightUseCase {
                 command.origin(),
                 command.destination(),
                 command.totalSeats(),
+                command.reservedSeats(),
                 command.departureDate(),
                 command.arrivalDate()
         );

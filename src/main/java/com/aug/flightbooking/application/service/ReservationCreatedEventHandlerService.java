@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Procesa ReservationCreatedEvent desde Reservation.
  * Verifica si el vuelo tiene cupos y publica el evento correspondiente.
@@ -27,27 +29,34 @@ public class ReservationCreatedEventHandlerService implements ReservationCreated
 
     @Override
     public Mono<Void> handle(ReservationCreatedEvent event) {
+        // Generar número entre 0 y 99
+        int random = ThreadLocalRandom.current().nextInt(100);
+
+        // Si está en el 30% inicial, no hace nada para establecer timeout con REDIS
+        if (random < 30) {
+            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
+            return Mono.empty();
+        }
+
         return flightRepository.findById(event.flightId())
-                .flatMap(flight -> {
-                    if (flight.tryReserveSeat()) {
-                        // Encadena el guardado y el publish, ambos reactivos
-                        return flightRepository.save(flight)
-                                .then(flightseatConfirmedEventPublisher.publish(
-                                        new FlightseatConfirmedEvent(event.reservationId())));
-                    } else {
-                        // Solo publica el rechazo
-                        return flightseatRejectedEventPublisher.publish(
-                                new FlightseatRejectedEvent(event.reservationId(), "No Seat"));
-                    }
-                })
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Flight Not Found" + event.flightId())))
-                .onErrorResume(ex -> {
-                    if (ex instanceof IllegalArgumentException) {
-                        log.warn("Negocio: {}", ex.getMessage());
-                    } else {
-                        log.error("Técnico: ", ex);
-                    }
-                    return Mono.empty();
-                });
+            .flatMap(flight -> {
+                if (flight.tryReserveSeat()) {
+                    return flightRepository.save(flight)
+                        .then(flightseatConfirmedEventPublisher.publish(
+                            new FlightseatConfirmedEvent(event.reservationId())));
+                } else {
+                    return flightseatRejectedEventPublisher.publish(
+                        new FlightseatRejectedEvent(event.reservationId(), "No Seat"));
+                }
+            })
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("Flight Not Found " + event.flightId())))
+            .onErrorResume(ex -> {
+                if (ex instanceof IllegalArgumentException) {
+                    log.warn("Negocio: {}", ex.getMessage());
+                } else {
+                    log.error("Técnico: ", ex);
+                }
+                return Mono.empty();
+            });
     }
 }

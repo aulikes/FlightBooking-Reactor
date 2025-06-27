@@ -28,39 +28,37 @@ public class FlightDataInitializer {
     public Mono<List<FlightCreateResponse>> init() {
         log.info("Inicializando vuelos de prueba mediante el endpoint HTTP...");
 
-        String port = environment.getProperty("local.server.port", "8080");
+        String port = environment.getProperty("local.server.port");
         String baseUrl = "http://localhost:" + port;
 
         WebClient client = webClientBuilder.baseUrl(baseUrl).build();
-
-        List<FlightCreateRequest> requests = new ArrayList<>();
         Instant now = Instant.now().truncatedTo(ChronoUnit.MINUTES);
 
-        for (int i = 1; i <= 5; i++) {
-            FlightCreateRequest flight = new FlightCreateRequest();
-            flight.setAirlineName("Airline " + i);
-            flight.setAirlineCode("AL" + String.format("%02d", i));
-            flight.setFlightCode("FL" + String.format("%03d", i));
-            flight.setOrigin("BOG");
-            flight.setDestination("MDE");
-            flight.setTotalSeats(100 + i);
-            flight.setDepartureDate(now.plus(i * 10, ChronoUnit.MINUTES).toString());
-            flight.setArrivalDate(now.plus(i * 10 + 180, ChronoUnit.MINUTES).toString());
-            requests.add(flight);
-        }
-
-        return Flux.fromIterable(requests)
-                .flatMap(req -> client.post()
-                        .uri("/api/flight")
-                        .bodyValue(req)
-                        .retrieve()
-                        .bodyToMono(FlightCreateResponse.class)
-                        .doOnNext(response -> log.info("Vuelo creado: {}", response.flightCode()))
-                        .doOnError(e -> log.error("Error creando vuelo {}", req.getFlightCode(), e))
-                )
-                .collectList()
-                .doOnSuccess(list -> log.info("Se crearon {} vuelos exitosamente", list.size()))
-                .doOnError(e -> log.error("Error general al inicializar vuelos", e));
+        return Flux.range(1, 5)
+            .map(i -> {
+                FlightCreateRequest flight = new FlightCreateRequest();
+                flight.setAirlineName("Airline " + i);
+                flight.setAirlineCode("AL" + String.format("%02d", i));
+                flight.setFlightCode("FL" + String.format("%03d", i));
+                flight.setOrigin("BOG");
+                flight.setDestination("MDE");
+                flight.setTotalSeats(100);
+                flight.setReservedSeats(99);
+                flight.setDepartureDate(now.plus(i * 10, ChronoUnit.MINUTES).toString());
+                flight.setArrivalDate(now.plus(i * 10 + 180, ChronoUnit.MINUTES).toString());
+                return flight;
+            })
+            .flatMap(req -> client.post()
+                    .uri("/api/flight")
+                    .bodyValue(req)
+                    .retrieve()
+                    .bodyToMono(FlightCreateResponse.class)
+                    .doOnNext(response -> log.info("Vuelo creado: {}", response.flightCode()))
+                    .doOnError(e -> log.error("Error creando vuelo {}", req.getFlightCode(), e))
+            )
+            .collectList()
+            .doOnSuccess(list -> log.info("Se crearon {} vuelos exitosamente", list.size()))
+            .doOnError(e -> log.error("Error general al inicializar vuelos", e));
     }
 
 }

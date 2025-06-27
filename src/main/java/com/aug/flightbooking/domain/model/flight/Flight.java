@@ -40,10 +40,10 @@ public class Flight {
      * Fábrica para crear un nuevo vuelo programado.
      */
     public static Flight create(Airline airline, String flightCode, String origin, String destination,
-                                int totalSeats, Instant scheduledDeparture, Instant scheduledArrival) {
+                        int totalSeats, int reservedSeats, Instant scheduledDeparture, Instant scheduledArrival) {
 
-        return new Flight(null, airline, flightCode, origin, destination, totalSeats, 0, scheduledDeparture,
-                scheduledArrival, FlightStatus.SCHEDULED);
+        return new Flight(null, airline, flightCode, origin, destination, totalSeats, reservedSeats,
+                scheduledDeparture, scheduledArrival, FlightStatus.SCHEDULED);
     }
 
     /**

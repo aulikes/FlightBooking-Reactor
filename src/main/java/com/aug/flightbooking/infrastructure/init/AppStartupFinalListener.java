@@ -1,32 +1,20 @@
 package com.aug.flightbooking.infrastructure.init;
 
 import com.aug.flightbooking.infrastructure.cache.ReservationTimeoutScheduler;
+import com.aug.flightbooking.infrastructure.messaging.listener.ReactiveListenersOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.PartitionInfo;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
-import reactor.kafka.receiver.ReceiverOptions;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
@@ -37,6 +25,8 @@ public class AppStartupFinalListener {
     private final ReactiveRedisConnectionFactory redisConnectionFactory;
     private final ReservationTimeoutScheduler timeoutScheduler;
     private final FlightDataInitializer flightDataInitializer;
+    private final ReservationDataInitializer reservationDataInitializer;
+    private final ReactiveListenersOrchestrator reactiveListenersOrchestrator;
 
     private final String kafkaBootstrapServers = "localhost:9092"; // reemplaza por properties si lo deseas
 
@@ -47,31 +37,42 @@ public class AppStartupFinalListener {
         Mono<Void> redisReady = waitForRedisReady();
         Mono<Void> kafkaReady = waitForKafkaReady();
 
+        /**
+         * No se puede usar Mono.zip, debido a que este espera un resultado, y en este caso ambos son void
+         * Si se usa Mono.zip en este caso, se ejecuta el contenido del flujo sin esperar al otro, por ser VOID
+         */
         Mono.when(redisReady, kafkaReady)
-            .doOnSuccess(tuple -> {
-                log.info("Redis y Kafka están listos...");
+            .doOnSuccess(v -> log.info("Redis y Kafka están listos..."))
+//            .then(flightDataInitializer.init()) // Mono<List<FlightCreateResponse>>
+            .then(Mono.defer(() -> {
+                // redisReady y kafkaReady emiten un VOID, por eso se debe usar THEN, y no FLATMAP
+                // Si se utiliza FLATMAP el flujo no entra debido a que espera un valor y los que se emite anteriormente es VOID
+                // Se usa Mono.defer solo para poder imprimir el log, se puede quitar y ejecutar directamente flightDataInitializer.init()
+                log.info("Inicio de creación de Vuelos");
+                return flightDataInitializer.init(); // Mono<List<FlightCreateResponse>>
+            }))
+            .flatMap(flightResponses -> {
+                log.info("Inicio de creación de Reservas");
+                return reservationDataInitializer.init(flightResponses); // Mono<List<ReservationResponse>>
             })
-            .then(
-                flightDataInitializer.init()
-                    .doOnSuccess(v -> log.info("Inicialización de datos de vuelo completada"))
-            )
+            .then(Mono.defer(() -> {
+                log.info("Activando listeners reactivamente...");
+                return reactiveListenersOrchestrator.startAllListeners();
+            }))
+            .doOnSuccess(v -> {
+                log.info("Inicialización completa");
+
+                // Se lanza el Scheduler en un flujo paralelo.
+                // No se encadena al flujo principal (no se espera su resultado).
+                // Indica que se ejecute en un hilo de tipo "elastic" (apto para tareas largas, como el scheduler).
+                timeoutScheduler.startSchedulerReservations()
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .subscribe();
+            })
             .doOnError(ex -> {
                 log.error("Error durante inicio de la aplicación: {}", ex.getMessage(), ex);
-                // Detener el sistema si falla algo
                 System.exit(1);
             })
-            .doOnSuccess(
-                v -> {
-                    log.info("Inicialización completa");
-
-                    // Se lanza el Scheduler en un flujo paralelo.
-                    // No se encadena al flujo principal (no se espera su resultado).
-                    // Indica que se ejecute en un hilo de tipo "elastic" (apto para tareas largas, como el scheduler).
-                    timeoutScheduler.startSchedulerReservations()
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe(); // Aquí sí se lanza por fuera, en paralelo
-                }
-            ) // Esto se ejecuta cuando init() termina exitosamente
             .subscribe();
     }
 

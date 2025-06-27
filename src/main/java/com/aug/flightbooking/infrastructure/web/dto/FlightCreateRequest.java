@@ -24,6 +24,9 @@ public class FlightCreateRequest {
     @Min(1)
     private int totalSeats;
 
+    @Min(0)
+    private int reservedSeats;
+
     /**
      * departureDate:
      *       type: string

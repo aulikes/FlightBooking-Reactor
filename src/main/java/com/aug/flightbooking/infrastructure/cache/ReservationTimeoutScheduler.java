@@ -31,7 +31,7 @@ public class ReservationTimeoutScheduler {
         log.info("Iniciando Scheduler ReservationTimeoutScheduler");
         return Flux.interval(Duration.ZERO, Duration.ofSeconds(properties.getPeriodFluxSeconds()))
             // Loguea cada tick recibido
-            .doOnNext(tick -> log.info("Tick recibido: {}", tick))
+            .doOnNext(tick -> log.debug("Tick recibido: {}", tick))
 
             // Para cada tick, llamamos a failReservations y medimos su duración
             .flatMap(tick ->
