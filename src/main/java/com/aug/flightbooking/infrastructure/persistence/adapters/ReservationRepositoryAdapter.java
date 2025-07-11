@@ -1,11 +1,11 @@
-package com.aug.flightbooking.infrastructure.persistence.adapter;
+package com.aug.flightbooking.infrastructure.persistence.adapters;
 
 import com.aug.flightbooking.application.ports.out.ReservationRepository;
 import com.aug.flightbooking.domain.models.reservation.Reservation;
 import com.aug.flightbooking.domain.models.reservation.ReservationStatus;
-import com.aug.flightbooking.infrastructure.persistence.entity.ReservationEntity;
-import com.aug.flightbooking.infrastructure.persistence.mapper.ReservationMapper;
-import com.aug.flightbooking.infrastructure.persistence.repository.R2dbcReservationRepository;
+import com.aug.flightbooking.infrastructure.persistence.entities.ReservationEntity;
+import com.aug.flightbooking.infrastructure.persistence.mappers.ReservationMapper;
+import com.aug.flightbooking.infrastructure.persistence.repositories.R2dbcReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;

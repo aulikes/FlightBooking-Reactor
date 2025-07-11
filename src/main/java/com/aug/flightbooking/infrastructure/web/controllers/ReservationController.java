@@ -1,8 +1,8 @@
-package com.aug.flightbooking.infrastructure.web.rest;
+package com.aug.flightbooking.infrastructure.web.controllers;
 
-import com.aug.flightbooking.infrastructure.web.dto.ReservationRequest;
-import com.aug.flightbooking.infrastructure.web.dto.ReservationResponse;
-import com.aug.flightbooking.infrastructure.web.mapper.ReservationCreateMapper;
+import com.aug.flightbooking.infrastructure.web.dtos.ReservationRequest;
+import com.aug.flightbooking.infrastructure.web.dtos.ReservationResponse;
+import com.aug.flightbooking.infrastructure.web.mappers.ReservationCreateMapper;
 import com.aug.flightbooking.application.ports.in.CreateReservationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

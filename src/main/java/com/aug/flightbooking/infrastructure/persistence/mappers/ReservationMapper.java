@@ -1,9 +1,9 @@
-package com.aug.flightbooking.infrastructure.persistence.mapper;
+package com.aug.flightbooking.infrastructure.persistence.mappers;
 
 import com.aug.flightbooking.domain.models.reservation.Reservation;
 import com.aug.flightbooking.domain.models.reservation.ReservationStatus;
 import com.aug.flightbooking.domain.models.reservation.PassengerInfo;
-import com.aug.flightbooking.infrastructure.persistence.entity.ReservationEntity;
+import com.aug.flightbooking.infrastructure.persistence.entities.ReservationEntity;
 
 public class ReservationMapper {
 

@@ -1,10 +1,10 @@
-package com.aug.flightbooking.infrastructure.web.rest;
+package com.aug.flightbooking.infrastructure.web.controllers;
 
 import com.aug.flightbooking.application.commands.CreateFlightCommand;
 import com.aug.flightbooking.application.ports.in.CreateFlightUseCase;
-import com.aug.flightbooking.infrastructure.web.dto.FlightCreateRequest;
-import com.aug.flightbooking.infrastructure.web.dto.FlightCreateResponse;
-import com.aug.flightbooking.infrastructure.web.mapper.FlightCreateMapper;
+import com.aug.flightbooking.infrastructure.web.dtos.FlightCreateRequest;
+import com.aug.flightbooking.infrastructure.web.dtos.FlightCreateResponse;
+import com.aug.flightbooking.infrastructure.web.mappers.FlightCreateMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

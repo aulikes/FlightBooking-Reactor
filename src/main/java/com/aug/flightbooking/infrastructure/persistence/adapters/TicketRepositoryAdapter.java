@@ -1,10 +1,10 @@
-package com.aug.flightbooking.infrastructure.persistence.adapter;
+package com.aug.flightbooking.infrastructure.persistence.adapters;
 
 import com.aug.flightbooking.application.ports.out.TicketRepository;
 import com.aug.flightbooking.domain.models.ticket.Ticket;
-import com.aug.flightbooking.infrastructure.persistence.entity.TicketEntity;
-import com.aug.flightbooking.infrastructure.persistence.mapper.TicketPersistenceMapper;
-import com.aug.flightbooking.infrastructure.persistence.repository.R2dbcTicketRepository;
+import com.aug.flightbooking.infrastructure.persistence.entities.TicketEntity;
+import com.aug.flightbooking.infrastructure.persistence.mappers.TicketPersistenceMapper;
+import com.aug.flightbooking.infrastructure.persistence.repositories.R2dbcTicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

@@ -1,6 +1,6 @@
-package com.aug.flightbooking.infrastructure.persistence.repository;
+package com.aug.flightbooking.infrastructure.persistence.repositories;
 
-import com.aug.flightbooking.infrastructure.persistence.entity.TicketEntity;
+import com.aug.flightbooking.infrastructure.persistence.entities.TicketEntity;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 

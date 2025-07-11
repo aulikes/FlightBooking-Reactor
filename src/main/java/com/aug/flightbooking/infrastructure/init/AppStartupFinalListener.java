@@ -37,9 +37,9 @@ public class AppStartupFinalListener {
         Mono<Void> redisReady = waitForRedisReady();
         Mono<Void> kafkaReady = waitForKafkaReady();
 
-        /**
-         * No se puede usar Mono.zip, debido a que este espera un resultado, y en este caso ambos son void
-         * Si se usa Mono.zip en este caso, se ejecuta el contenido del flujo sin esperar al otro, por ser VOID
+        /*
+          No se puede usar Mono.zip, debido a que este espera un resultado, y en este caso ambos son void
+          Si se usa Mono.zip en este caso, se ejecuta el contenido del flujo sin esperar al otro, por ser VOID
          */
         Mono.when(redisReady, kafkaReady)
             .doOnSuccess(v -> log.info("Redis y Kafka están listos..."))
@@ -111,7 +111,7 @@ public class AppStartupFinalListener {
                                 log.info("[{}] Kafka respondió con topics: {}", tick, topics);
                                 return Mono.just(true);
                             } else {
-                                log.warn("[{}] Kafka no devolvió topics válidos todavía", tick);
+                                log.warn("[{}] Kafka no devolvió topics válidos", tick);
                                 return Mono.empty();
                             }
                         });

@@ -1,8 +1,8 @@
-package com.aug.flightbooking.infrastructure.web.rest;
+package com.aug.flightbooking.infrastructure.web.controllers;
 
 import com.aug.flightbooking.application.ports.in.CheckInTicketUseCase;
-import com.aug.flightbooking.infrastructure.web.dto.CheckInRequest;
-import com.aug.flightbooking.infrastructure.web.mapper.CheckInCreateMapper;
+import com.aug.flightbooking.infrastructure.web.dtos.CheckInRequest;
+import com.aug.flightbooking.infrastructure.web.mappers.CheckInCreateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

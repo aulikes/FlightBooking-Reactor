@@ -1,8 +1,8 @@
-package com.aug.flightbooking.infrastructure.persistence.mapper;
+package com.aug.flightbooking.infrastructure.persistence.mappers;
 
 import com.aug.flightbooking.domain.models.ticket.Ticket;
 import com.aug.flightbooking.domain.models.ticket.TicketStatus;
-import com.aug.flightbooking.infrastructure.persistence.entity.TicketEntity;
+import com.aug.flightbooking.infrastructure.persistence.entities.TicketEntity;
 
 /**
  * Mapper responsable de convertir entre la entidad de dominio Ticket

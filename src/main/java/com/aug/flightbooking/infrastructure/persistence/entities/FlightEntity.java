@@ -1,4 +1,4 @@
-package com.aug.flightbooking.infrastructure.persistence.entity;
+package com.aug.flightbooking.infrastructure.persistence.entities;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;

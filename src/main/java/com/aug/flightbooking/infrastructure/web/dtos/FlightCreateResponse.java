@@ -1,4 +1,4 @@
-package com.aug.flightbooking.infrastructure.web.dto;
+package com.aug.flightbooking.infrastructure.web.dtos;
 
 import java.time.Instant;
 

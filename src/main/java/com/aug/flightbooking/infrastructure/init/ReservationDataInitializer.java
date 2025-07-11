@@ -1,9 +1,8 @@
 package com.aug.flightbooking.infrastructure.init;
 
-import com.aug.flightbooking.infrastructure.web.dto.FlightCreateRequest;
-import com.aug.flightbooking.infrastructure.web.dto.FlightCreateResponse;
-import com.aug.flightbooking.infrastructure.web.dto.ReservationRequest;
-import com.aug.flightbooking.infrastructure.web.dto.ReservationResponse;
+import com.aug.flightbooking.infrastructure.web.dtos.FlightCreateResponse;
+import com.aug.flightbooking.infrastructure.web.dtos.ReservationRequest;
+import com.aug.flightbooking.infrastructure.web.dtos.ReservationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
@@ -12,9 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
