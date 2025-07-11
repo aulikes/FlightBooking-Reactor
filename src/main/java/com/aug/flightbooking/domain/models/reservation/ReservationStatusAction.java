@@ -1,6 +1,6 @@
-package com.aug.flightbooking.domain.model.reservation;
+package com.aug.flightbooking.domain.models.reservation;
 
-import com.aug.flightbooking.domain.exception.ReservationChangeStatusException;
+import com.aug.flightbooking.domain.exceptions.ReservationChangeStatusException;
 
 /**
  * Enum que establece los métodos que se deben ejecutar cuando se requiere cambiar de estado.

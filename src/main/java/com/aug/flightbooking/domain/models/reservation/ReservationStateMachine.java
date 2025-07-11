@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.reservation;
+package com.aug.flightbooking.domain.models.reservation;
 
 import java.util.EnumMap;
 import java.util.EnumSet;

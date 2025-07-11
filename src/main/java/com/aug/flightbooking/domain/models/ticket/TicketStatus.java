@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.ticket;
+package com.aug.flightbooking.domain.models.ticket;
 /**
  * Representa los diferentes estados posibles de un tiquete dentro del sistema.
  */

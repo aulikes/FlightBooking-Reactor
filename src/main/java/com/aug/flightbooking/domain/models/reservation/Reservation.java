@@ -1,6 +1,6 @@
-package com.aug.flightbooking.domain.model.reservation;
+package com.aug.flightbooking.domain.models.reservation;
 
-import com.aug.flightbooking.domain.exception.ReservationChangeStatusException;
+import com.aug.flightbooking.domain.exceptions.ReservationChangeStatusException;
 
 import java.time.Instant;
 import java.util.Objects;

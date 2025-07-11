@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.persistence.mapper;
 
-import com.aug.flightbooking.domain.model.ticket.Ticket;
-import com.aug.flightbooking.domain.model.ticket.TicketStatus;
+import com.aug.flightbooking.domain.models.ticket.Ticket;
+import com.aug.flightbooking.domain.models.ticket.TicketStatus;
 import com.aug.flightbooking.infrastructure.persistence.entity.TicketEntity;
 
 /**

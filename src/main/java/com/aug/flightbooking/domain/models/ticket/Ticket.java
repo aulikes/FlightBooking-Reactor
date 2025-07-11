@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.ticket;
+package com.aug.flightbooking.domain.models.ticket;
 
 import java.time.Duration;
 import java.time.Instant;

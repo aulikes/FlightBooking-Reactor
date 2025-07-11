@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.flight;
+package com.aug.flightbooking.domain.models.flight;
 
 import java.util.Objects;
 

@@ -1,4 +1,4 @@
-package com.aug.flightbooking.domain.model.reservation;
+package com.aug.flightbooking.domain.models.reservation;
 
 /**
  * Define los posibles estados de una reserva de vuelo.
