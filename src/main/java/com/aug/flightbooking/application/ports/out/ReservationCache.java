@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.port.out;
+package com.aug.flightbooking.application.ports.out;
 
 import reactor.core.publisher.Mono;
 

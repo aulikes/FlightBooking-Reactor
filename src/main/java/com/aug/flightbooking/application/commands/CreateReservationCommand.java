@@ -1,6 +1,4 @@
-package com.aug.flightbooking.application.command;
-
-import java.time.LocalDate;
+package com.aug.flightbooking.application.commands;
 
 /**
  * Representa el comando para solicitar la creación de una reserva.

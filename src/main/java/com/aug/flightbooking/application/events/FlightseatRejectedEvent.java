@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.event;
+package com.aug.flightbooking.application.events;
 
 public record FlightseatRejectedEvent(Long reservationId, String reason) implements IntegrationEvent {
 

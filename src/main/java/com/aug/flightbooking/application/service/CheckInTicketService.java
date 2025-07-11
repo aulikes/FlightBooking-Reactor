@@ -1,9 +1,8 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.command.CreateCheckInCommand;
-import com.aug.flightbooking.application.port.in.CheckInTicketUseCase;
-import com.aug.flightbooking.application.port.out.TicketRepository;
-import com.aug.flightbooking.domain.model.ticket.Ticket;
+import com.aug.flightbooking.application.commands.CreateCheckInCommand;
+import com.aug.flightbooking.application.ports.in.CheckInTicketUseCase;
+import com.aug.flightbooking.application.ports.out.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

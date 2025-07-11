@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.web.rest;
 
-import com.aug.flightbooking.application.command.CreateFlightCommand;
-import com.aug.flightbooking.application.port.in.CreateFlightUseCase;
+import com.aug.flightbooking.application.commands.CreateFlightCommand;
+import com.aug.flightbooking.application.ports.in.CreateFlightUseCase;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateRequest;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateResponse;
 import com.aug.flightbooking.infrastructure.web.mapper.FlightCreateMapper;

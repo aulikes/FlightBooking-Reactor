@@ -1,6 +1,6 @@
 package com.aug.flightbooking.infrastructure.web.rest;
 
-import com.aug.flightbooking.application.port.in.CheckInTicketUseCase;
+import com.aug.flightbooking.application.ports.in.CheckInTicketUseCase;
 import com.aug.flightbooking.infrastructure.web.dto.CheckInRequest;
 import com.aug.flightbooking.infrastructure.web.mapper.CheckInCreateMapper;
 import lombok.RequiredArgsConstructor;

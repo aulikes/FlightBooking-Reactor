@@ -1,12 +1,12 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.event.ReservationCreatedEvent;
-import com.aug.flightbooking.application.port.in.CreateReservationUseCase;
-import com.aug.flightbooking.application.port.out.ReservationCreatedEventPublisher;
-import com.aug.flightbooking.application.port.out.ReservationRepository;
-import com.aug.flightbooking.application.command.CreateReservationCommand;
-import com.aug.flightbooking.application.port.out.ReservationCache;
-import com.aug.flightbooking.application.result.ReservationResult;
+import com.aug.flightbooking.application.events.ReservationCreatedEvent;
+import com.aug.flightbooking.application.ports.in.CreateReservationUseCase;
+import com.aug.flightbooking.application.ports.out.ReservationCreatedEventPublisher;
+import com.aug.flightbooking.application.ports.out.ReservationRepository;
+import com.aug.flightbooking.application.commands.CreateReservationCommand;
+import com.aug.flightbooking.application.ports.out.ReservationCache;
+import com.aug.flightbooking.application.results.ReservationResult;
 import com.aug.flightbooking.domain.model.reservation.PassengerInfo;
 import com.aug.flightbooking.domain.model.reservation.Reservation;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;

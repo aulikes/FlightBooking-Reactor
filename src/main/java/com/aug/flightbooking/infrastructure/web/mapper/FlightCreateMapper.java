@@ -1,6 +1,6 @@
 package com.aug.flightbooking.infrastructure.web.mapper;
 
-import com.aug.flightbooking.application.command.CreateFlightCommand;
+import com.aug.flightbooking.application.commands.CreateFlightCommand;
 import com.aug.flightbooking.domain.model.flight.Flight;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateRequest;
 import com.aug.flightbooking.infrastructure.web.dto.FlightCreateResponse;

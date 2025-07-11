@@ -1,7 +1,7 @@
 
 package com.aug.flightbooking.infrastructure.cache;
 
-import com.aug.flightbooking.application.port.in.FailReservationUseCase;
+import com.aug.flightbooking.application.ports.in.FailReservationUseCase;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

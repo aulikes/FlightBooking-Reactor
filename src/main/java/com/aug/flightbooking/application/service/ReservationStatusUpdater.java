@@ -1,6 +1,6 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.port.out.ReservationRepository;
+import com.aug.flightbooking.application.ports.out.ReservationRepository;
 import com.aug.flightbooking.domain.exception.ReservationChangeStatusException;
 import com.aug.flightbooking.domain.model.reservation.Reservation;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;

@@ -1,6 +1,6 @@
-package com.aug.flightbooking.application.port.out;
+package com.aug.flightbooking.application.ports.out;
 
-import com.aug.flightbooking.application.event.ReservationConfirmedEvent;
+import com.aug.flightbooking.application.events.ReservationConfirmedEvent;
 import reactor.core.publisher.Mono;
 
 public interface ReservationConfirmedEventPublisher {

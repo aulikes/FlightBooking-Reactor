@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.event;
+package com.aug.flightbooking.application.events;
 
 public record ReservationCreatedEvent(
     Long reservationId,

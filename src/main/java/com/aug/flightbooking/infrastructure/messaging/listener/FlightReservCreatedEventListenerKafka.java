@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.messaging.listener;
 
-import com.aug.flightbooking.application.event.ReservationCreatedEvent;
-import com.aug.flightbooking.application.port.in.ReservationCreatedEventHandler;
+import com.aug.flightbooking.application.events.ReservationCreatedEvent;
+import com.aug.flightbooking.application.ports.in.ReservationCreatedEventHandler;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaReceiverFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonDecoder;
@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
-import reactor.kafka.receiver.ReceiverRecord;
 
 @Component
 @Slf4j

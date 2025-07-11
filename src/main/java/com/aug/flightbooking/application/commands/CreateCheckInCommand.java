@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.command;
+package com.aug.flightbooking.application.commands;
 
 /**
  * Representa el comando para solicitar la creación de una reserva.

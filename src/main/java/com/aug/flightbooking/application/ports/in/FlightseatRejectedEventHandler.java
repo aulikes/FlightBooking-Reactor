@@ -1,6 +1,6 @@
-package com.aug.flightbooking.application.port.in;
+package com.aug.flightbooking.application.ports.in;
 
-import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
+import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import reactor.core.publisher.Mono;
 
 /**

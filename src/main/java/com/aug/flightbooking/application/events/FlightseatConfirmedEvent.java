@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.event;
+package com.aug.flightbooking.application.events;
 
 public record FlightseatConfirmedEvent(Long reservationId) implements IntegrationEvent
 {

@@ -1,11 +1,10 @@
 package com.aug.flightbooking.infrastructure.messaging.publisher;
 
-import com.aug.flightbooking.application.event.ReservationCreatedEvent;
-import com.aug.flightbooking.application.port.out.ReservationCreatedEventPublisher;
+import com.aug.flightbooking.application.events.ReservationCreatedEvent;
+import com.aug.flightbooking.application.ports.out.ReservationCreatedEventPublisher;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaSenderFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonEncoder;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;

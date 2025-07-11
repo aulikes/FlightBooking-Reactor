@@ -1,12 +1,12 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.event.ReservationCreatedEvent;
-import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
-import com.aug.flightbooking.application.port.in.ReservationCreatedEventHandler;
-import com.aug.flightbooking.application.port.out.FlightseatConfirmedEventPublisher;
-import com.aug.flightbooking.application.port.out.FlightseatRejectedEventPublisher;
-import com.aug.flightbooking.application.port.out.FlightRepository;
+import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
+import com.aug.flightbooking.application.events.ReservationCreatedEvent;
+import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
+import com.aug.flightbooking.application.ports.in.ReservationCreatedEventHandler;
+import com.aug.flightbooking.application.ports.out.FlightseatConfirmedEventPublisher;
+import com.aug.flightbooking.application.ports.out.FlightseatRejectedEventPublisher;
+import com.aug.flightbooking.application.ports.out.FlightRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

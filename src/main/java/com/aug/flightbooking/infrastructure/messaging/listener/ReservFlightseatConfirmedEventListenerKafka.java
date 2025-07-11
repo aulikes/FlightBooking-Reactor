@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.messaging.listener;
 
-import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.port.in.FlightseatConfirmedEventHandler;
+import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
+import com.aug.flightbooking.application.ports.in.FlightseatConfirmedEventHandler;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaReceiverFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonDecoder;

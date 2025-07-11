@@ -1,8 +1,8 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.port.in.FailReservationUseCase;
-import com.aug.flightbooking.application.port.out.ReservationCache;
-import com.aug.flightbooking.application.port.out.ReservationRepository;
+import com.aug.flightbooking.application.ports.in.FailReservationUseCase;
+import com.aug.flightbooking.application.ports.out.ReservationCache;
+import com.aug.flightbooking.application.ports.out.ReservationRepository;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

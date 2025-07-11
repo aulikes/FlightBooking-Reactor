@@ -1,6 +1,6 @@
-package com.aug.flightbooking.application.port.in;
+package com.aug.flightbooking.application.ports.in;
 
-import com.aug.flightbooking.application.command.CreateCheckInCommand;
+import com.aug.flightbooking.application.commands.CreateCheckInCommand;
 import reactor.core.publisher.Mono;
 
 /**

@@ -1,8 +1,8 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.command.CreateFlightCommand;
-import com.aug.flightbooking.application.port.in.CreateFlightUseCase;
-import com.aug.flightbooking.application.port.out.FlightRepository;
+import com.aug.flightbooking.application.commands.CreateFlightCommand;
+import com.aug.flightbooking.application.ports.in.CreateFlightUseCase;
+import com.aug.flightbooking.application.ports.out.FlightRepository;
 import com.aug.flightbooking.domain.model.flight.Airline;
 import com.aug.flightbooking.domain.model.flight.Flight;
 import lombok.RequiredArgsConstructor;

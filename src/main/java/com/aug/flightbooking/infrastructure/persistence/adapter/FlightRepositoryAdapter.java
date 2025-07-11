@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.persistence.adapter;
 
 import com.aug.flightbooking.domain.model.flight.Flight;
-import com.aug.flightbooking.application.port.out.FlightRepository;
+import com.aug.flightbooking.application.ports.out.FlightRepository;
 import com.aug.flightbooking.infrastructure.persistence.entity.FlightEntity;
 import com.aug.flightbooking.infrastructure.persistence.mapper.FlightMapper;
 import com.aug.flightbooking.infrastructure.persistence.repository.R2dbcFlightRepository;

@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.event;
+package com.aug.flightbooking.application.events;
 
 import java.io.Serializable;
 import java.time.Instant;

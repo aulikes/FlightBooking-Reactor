@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.messaging.publisher;
 
-import com.aug.flightbooking.application.event.FlightseatRejectedEvent;
-import com.aug.flightbooking.application.port.out.FlightseatRejectedEventPublisher;
+import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
+import com.aug.flightbooking.application.ports.out.FlightseatRejectedEventPublisher;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaSenderFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonEncoder;

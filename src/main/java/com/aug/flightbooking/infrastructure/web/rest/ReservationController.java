@@ -3,7 +3,7 @@ package com.aug.flightbooking.infrastructure.web.rest;
 import com.aug.flightbooking.infrastructure.web.dto.ReservationRequest;
 import com.aug.flightbooking.infrastructure.web.dto.ReservationResponse;
 import com.aug.flightbooking.infrastructure.web.mapper.ReservationCreateMapper;
-import com.aug.flightbooking.application.port.in.CreateReservationUseCase;
+import com.aug.flightbooking.application.ports.in.CreateReservationUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

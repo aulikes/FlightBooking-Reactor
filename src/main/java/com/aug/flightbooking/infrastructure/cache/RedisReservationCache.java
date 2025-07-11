@@ -1,6 +1,6 @@
 package com.aug.flightbooking.infrastructure.cache;
 
-import com.aug.flightbooking.application.port.out.ReservationCache;
+import com.aug.flightbooking.application.ports.out.ReservationCache;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.port.out;
+package com.aug.flightbooking.application.ports.out;
 
 import com.aug.flightbooking.domain.model.reservation.Reservation;
 import reactor.core.publisher.Flux;

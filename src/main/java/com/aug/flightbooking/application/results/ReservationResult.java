@@ -1,4 +1,4 @@
-package com.aug.flightbooking.application.result;
+package com.aug.flightbooking.application.results;
 
 import java.time.Instant;
 

@@ -1,10 +1,10 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.event.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.event.ReservationConfirmedEvent;
-import com.aug.flightbooking.application.port.in.FlightseatConfirmedEventHandler;
-import com.aug.flightbooking.application.port.out.ReservationCache;
-import com.aug.flightbooking.application.port.out.ReservationConfirmedEventPublisher;
+import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
+import com.aug.flightbooking.application.events.ReservationConfirmedEvent;
+import com.aug.flightbooking.application.ports.in.FlightseatConfirmedEventHandler;
+import com.aug.flightbooking.application.ports.out.ReservationCache;
+import com.aug.flightbooking.application.ports.out.ReservationConfirmedEventPublisher;
 import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
