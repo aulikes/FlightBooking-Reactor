@@ -1,0 +1,108 @@
+# Comando para el despliegue y agrupacioßn por proyecto 
+# docker compose up -d
+
+services:
+  # ---------------------------------------------------
+  # Servicio Zookeeper (requerido por Kafka)
+  # ---------------------------------------------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest        # Imagen oficial de Zookeeper
+    container_name: zookeeper                      # Nombre del contenedor
+    ports:
+      - "2181:2181"                                # Puerto para comunicación con Kafka
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181                  # Puerto que escucha Zookeeper
+      ZOOKEEPER_TICK_TIME: 2000                    # Intervalo base de sincronización
+
+  # ---------------------------------------------------
+  # Servicio Kafka (broker de eventos)
+  # ---------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0             # Imagen oficial de Apache Kafka
+    container_name: kafka                          # Nombre del contenedor
+    depends_on:
+      - zookeeper                                  # Espera a que Zookeeper esté listo
+    ports:
+      - "9092:9092"                                # Puerto accesible desde el host
+      - "9093:9093"                                # Puerto para otros contenedores (AKHQ)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  # ---------------------------------------------------
+  # AKHQ (interfaz web para monitorear Kafka)
+  # ---------------------------------------------------
+  akhq:
+    image: tchiotludo/akhq:latest                  # UI de monitoreo para Kafka
+    container_name: akhq
+    ports:
+      - "8099:8080"                                # UI accesible en http://localhost:8099
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            kafka-cluster:
+              properties:
+                bootstrap.servers: "kafka:9093"    # Comunicación interna entre contenedores
+    depends_on:
+      - kafka
+
+  # ---------------------------------------------------
+  # RabbitMQ (broker de colas) con UI web
+  # ---------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management                   # Incluye interfaz web
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"                                # Puerto para conexión desde apps
+      - "15672:15672"                              # Interfaz web http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+
+  # ---------------------------------------------------
+  # PostgreSQL (base de datos principal del sistema)
+  # ---------------------------------------------------
+  postgres:
+    image: postgres:15                             # Imagen oficial de PostgreSQL
+    container_name: postgres
+    ports:
+      - "5432:5432"                                # Puerto por defecto de PostgreSQL
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: task_manager_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data     # Persistencia de datos
+
+  # ---------------------------------------------------
+  # MongoDB (NoSQL - opcional para documentos u otros módulos)
+  # ---------------------------------------------------
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # ---------------------------------------------------
+  # Redis (almacenamiento en memoria - usado como cache o cola ligera)
+  # ---------------------------------------------------
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+# ---------------------------------------------------
+# Volúmenes persistentes
+# ---------------------------------------------------
+volumes:
+  postgres_data:
+  mongo_data:
