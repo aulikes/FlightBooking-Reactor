@@ -1,8 +1,8 @@
 package com.aug.flightbooking.infrastructure.persistence.mapper;
 
-import com.aug.flightbooking.domain.model.flight.Airline;
-import com.aug.flightbooking.domain.model.flight.Flight;
-import com.aug.flightbooking.domain.model.flight.FlightStatus;
+import com.aug.flightbooking.domain.models.flight.Airline;
+import com.aug.flightbooking.domain.models.flight.Flight;
+import com.aug.flightbooking.domain.models.flight.FlightStatus;
 import com.aug.flightbooking.infrastructure.persistence.entity.FlightEntity;
 
 public class FlightMapper {

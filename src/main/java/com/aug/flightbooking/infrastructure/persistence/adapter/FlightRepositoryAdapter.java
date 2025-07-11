@@ -1,6 +1,6 @@
 package com.aug.flightbooking.infrastructure.persistence.adapter;
 
-import com.aug.flightbooking.domain.model.flight.Flight;
+import com.aug.flightbooking.domain.models.flight.Flight;
 import com.aug.flightbooking.application.ports.out.FlightRepository;
 import com.aug.flightbooking.infrastructure.persistence.entity.FlightEntity;
 import com.aug.flightbooking.infrastructure.persistence.mapper.FlightMapper;

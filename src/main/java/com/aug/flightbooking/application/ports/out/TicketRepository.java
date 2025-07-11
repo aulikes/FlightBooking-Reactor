@@ -1,6 +1,6 @@
 package com.aug.flightbooking.application.ports.out;
 
-import com.aug.flightbooking.domain.model.ticket.Ticket;
+import com.aug.flightbooking.domain.models.ticket.Ticket;
 import reactor.core.publisher.Mono;
 
 /**

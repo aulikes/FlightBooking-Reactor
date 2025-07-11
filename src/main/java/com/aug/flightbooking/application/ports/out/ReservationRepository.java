@@ -1,6 +1,6 @@
 package com.aug.flightbooking.application.ports.out;
 
-import com.aug.flightbooking.domain.model.reservation.Reservation;
+import com.aug.flightbooking.domain.models.reservation.Reservation;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

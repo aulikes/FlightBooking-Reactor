@@ -1,8 +1,8 @@
 package com.aug.flightbooking.infrastructure.persistence.adapter;
 
 import com.aug.flightbooking.application.ports.out.ReservationRepository;
-import com.aug.flightbooking.domain.model.reservation.Reservation;
-import com.aug.flightbooking.domain.model.reservation.ReservationStatus;
+import com.aug.flightbooking.domain.models.reservation.Reservation;
+import com.aug.flightbooking.domain.models.reservation.ReservationStatus;
 import com.aug.flightbooking.infrastructure.persistence.entity.ReservationEntity;
 import com.aug.flightbooking.infrastructure.persistence.mapper.ReservationMapper;
 import com.aug.flightbooking.infrastructure.persistence.repository.R2dbcReservationRepository;

@@ -3,7 +3,7 @@ package com.aug.flightbooking.application.service;
 import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.ports.in.FlightseatRejectedEventHandler;
 import com.aug.flightbooking.application.ports.out.ReservationCache;
-import com.aug.flightbooking.domain.model.reservation.ReservationStatusAction;
+import com.aug.flightbooking.domain.models.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
