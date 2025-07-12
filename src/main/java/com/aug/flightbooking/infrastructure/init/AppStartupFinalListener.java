@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,8 @@ public class AppStartupFinalListener {
     private final ReservationDataInitializer reservationDataInitializer;
     private final ReactiveListenersOrchestrator reactiveListenersOrchestrator;
 
-    private final String kafkaBootstrapServers = "localhost:9092"; // reemplaza por properties si lo deseas
+    @Value("${app.kafka.bootstrap-servers}")
+    private String kafkaBootstrapServers;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
@@ -97,29 +99,31 @@ public class AppStartupFinalListener {
         AtomicInteger attempt = new AtomicInteger(0);
 
         return Mono.defer(() -> {
-                int tick = attempt.getAndIncrement();
-                log.info("[{}] Enviando request a Kafka...", tick);
+            int tick = attempt.getAndIncrement();
+            log.info("[{}] Verificando disponibilidad del cluster Kafka...", tick);
 
-                Properties props = new Properties();
-                props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
-                AdminClient adminClient = AdminClient.create(props);
+            Properties props = new Properties();
+            props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+            AdminClient adminClient = AdminClient.create(props);
 
-                return Mono.fromFuture(adminClient.listTopics().names().toCompletionStage().toCompletableFuture())
-                        .doFinally(signal -> adminClient.close())
-                        .flatMap(topics -> {
-                            if (topics != null && !topics.isEmpty()) {
-                                log.info("[{}] Kafka respondió con topics: {}", tick, topics);
-                                return Mono.just(true);
-                            } else {
-                                log.warn("[{}] Kafka no devolvió topics válidos", tick);
-                                return Mono.empty();
-                            }
-                        });
-            })
-            .repeatWhenEmpty(repeat -> repeat.delayElements(Duration.ofSeconds(5)))
-            .timeout(Duration.ofMinutes(2)) // Esto sí falla correctamente
-            .doOnSuccess(ok -> log.info("Kafka está listo"))
-            .then();
+            return Mono.fromFuture(adminClient.describeCluster().nodes().toCompletionStage().toCompletableFuture())
+                    .doFinally(signal -> adminClient.close())
+                    .flatMap(nodes -> {
+                        if (nodes != null && !nodes.isEmpty()) {
+                            log.info("[{}] Kafka cluster está accesible con {} nodo(s): {}", tick, nodes.size(), nodes);
+                            return Mono.just(true);
+                        } else {
+                            log.warn("[{}] Kafka respondió sin nodos activos", tick);
+                            return Mono.empty();
+                        }
+                    });
+        })
+        .repeatWhenEmpty(repeat -> repeat.delayElements(Duration.ofSeconds(5)))
+        .timeout(Duration.ofMinutes(2))
+        .doOnSuccess(ok -> log.info("Kafka está listo"))
+        .doOnError(e -> log.error("Kafka no respondió a tiempo: {}", e.getMessage(), e))
+        .then();
     }
+
 
 }

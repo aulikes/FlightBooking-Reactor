@@ -1,5 +1,5 @@
-# Comando para el despliegue y agrupacioßn por proyecto 
-# docker compose up -d
+# Comando para el despliegue y agrupación por proyecto
+# docker compose -p flightbooking up -d
 
 services:
   # ---------------------------------------------------
@@ -7,7 +7,7 @@ services:
   # ---------------------------------------------------
   zookeeper:
     image: confluentinc/cp-zookeeper:latest        # Imagen oficial de Zookeeper
-    container_name: zookeeper                      # Nombre del contenedor
+    container_name: zookeeper-flight                      # Nombre del contenedor
     ports:
       - "2181:2181"                                # Puerto para comunicación con Kafka
     environment:
@@ -19,7 +19,7 @@ services:
   # ---------------------------------------------------
   kafka:
     image: confluentinc/cp-kafka:7.4.0             # Imagen oficial de Apache Kafka
-    container_name: kafka                          # Nombre del contenedor
+    container_name: kafka-flight                          # Nombre del contenedor
     depends_on:
       - zookeeper                                  # Espera a que Zookeeper esté listo
     ports:
@@ -39,7 +39,7 @@ services:
   # ---------------------------------------------------
   akhq:
     image: tchiotludo/akhq:latest                  # UI de monitoreo para Kafka
-    container_name: akhq
+    container_name: akhq-flight
     ports:
       - "8099:8080"                                # UI accesible en http://localhost:8099
     environment:
@@ -53,50 +53,26 @@ services:
       - kafka
 
   # ---------------------------------------------------
-  # RabbitMQ (broker de colas) con UI web
-  # ---------------------------------------------------
-  rabbitmq:
-    image: rabbitmq:3-management                   # Incluye interfaz web
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"                                # Puerto para conexión desde apps
-      - "15672:15672"                              # Interfaz web http://localhost:15672
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
-
-  # ---------------------------------------------------
   # PostgreSQL (base de datos principal del sistema)
   # ---------------------------------------------------
   postgres:
     image: postgres:15                             # Imagen oficial de PostgreSQL
-    container_name: postgres
+    container_name: postgres-flight
     ports:
-      - "5432:5432"                                # Puerto por defecto de PostgreSQL
+      - "5433:5432"                                # Puerto por defecto de PostgreSQL
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: task_manager_db
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: flightbooking
     volumes:
       - postgres_data:/var/lib/postgresql/data     # Persistencia de datos
-
-  # ---------------------------------------------------
-  # MongoDB (NoSQL - opcional para documentos u otros módulos)
-  # ---------------------------------------------------
-  mongodb:
-    image: mongo:6
-    container_name: mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
 
   # ---------------------------------------------------
   # Redis (almacenamiento en memoria - usado como cache o cola ligera)
   # ---------------------------------------------------
   redis:
     image: redis:7
-    container_name: redis
+    container_name: redis-flight
     ports:
       - "6379:6379"
 
@@ -105,4 +81,3 @@ services:
 # ---------------------------------------------------
 volumes:
   postgres_data:
-  mongo_data:
