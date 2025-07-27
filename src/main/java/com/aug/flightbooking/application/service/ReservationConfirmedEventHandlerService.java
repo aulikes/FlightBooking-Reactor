@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Procesa ReservationCreatedEvent desde Reservation.
  * Verifica si el vuelo tiene cupos y publica el evento correspondiente.
@@ -25,13 +27,22 @@ public class ReservationConfirmedEventHandlerService implements ReservationConfi
 
     @Override
     public Mono<Void> handle(TicketCreatedEvent event) {
+        // Generar número entre 0 y 99
+        int random = ThreadLocalRandom.current().nextInt(100);
+
+        // Si está en el % inicial, no hace nada para establecer timeout con REDIS
+        if (random < 30) {
+            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
+            return Mono.empty();
+        }
+
         return reservationRepository.findById(event.reservationId())
             .switchIfEmpty(Mono.defer(() -> {
                 log.error("[handle] reservation NO encontrado: reservationId={}", event.reservationId());
                 return Mono.empty(); // Aquí salimos si no existe el vuelo
             }))
             .flatMap(reservation -> {
-                log.error("[handle] reservation encontrado: reservationId={}", event.reservationId());
+                log.info("[handle] reservation encontrado: reservationId={}", event.reservationId());
                 return reservationStatusUpdater.updateStatus(
                         reservation, ReservationStatusAction.CONFIRMED);
             })

@@ -57,11 +57,11 @@ public class AppStartupFinalListener {
           Si se usa Mono.zip en este caso, se ejecuta el contenido del flujo sin esperar al otro, por ser VOID
          */
         Mono.when(redisReady, kafkaReady)
+            // redisReady y kafkaReady emiten un VOID, por eso se debe usar THEN, y no FLATMAP
+            // Si se utiliza FLATMAP el flujo no entra debido a que espera un valor y los que se emite anteriormente es VOID
+            // Se usa Mono.defer solo para poder imprimir el log, se puede quitar y ejecutar directamente flightDataInitializer.init()
             .doOnSuccess(v -> log.info("Redis y Kafka están listos..."))
             .then(Mono.defer(() -> {
-                // redisReady y kafkaReady emiten un VOID, por eso se debe usar THEN, y no FLATMAP
-                // Si se utiliza FLATMAP el flujo no entra debido a que espera un valor y los que se emite anteriormente es VOID
-                // Se usa Mono.defer solo para poder imprimir el log, se puede quitar y ejecutar directamente flightDataInitializer.init()
                 log.info("Inicio de creación de Vuelos");
                 return flightDataInitializer.init(); // Mono<List<FlightCreateResponse>>
             }))

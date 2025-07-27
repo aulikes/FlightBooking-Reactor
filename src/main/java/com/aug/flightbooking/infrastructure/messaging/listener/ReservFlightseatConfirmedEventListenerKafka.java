@@ -21,28 +21,34 @@ public class ReservFlightseatConfirmedEventListenerKafka {
     private final ReactiveJsonDecoder decoder;
 
     public Mono<Void> onMessage() {
-        // Creamos el receptor Kafka usando configuración centralizada
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
-            properties.getKafka().getBootstrapServers(),
-            properties.getKafka().getProducer().getFlightseatConfirmedTopic(),
-            properties.getKafka().getConsumer().getFlightseatReservationConfirmedGroupId()
+                properties.getKafka().getBootstrapServers(),
+                properties.getKafka().getProducer().getFlightseatConfirmedTopic(),
+                properties.getKafka().getConsumer().getFlightseatReservationConfirmedGroupId()
         );
 
         return receiver.receive()
-            .flatMap(record ->
-                decoder.decode(record.value(), FlightseatConfirmedEvent.class)
-                    .flatMap(event ->
-                        handler.handle(event)
-                            .doOnSuccess(ok ->
-                                log.info("ReservFlightseatConfirmedEventListenerKafka procesado correctamente. reservationId={}", event.reservationId())
-                            )
-                    )
-                    // Solo después de procesar con éxito, confirmamos el offset al broker
-                    .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
-            )
-            // Se ejecuta una vez cuando comienza la suscripción al topic
-            .doOnSubscribe(sub -> log.info("ReservFlightseatConfirmedEventListenerKafka activo"))
-            .doOnError(e -> log.error("Error procesando ReservFlightseatConfirmedEventListenerKafka", e))
-            .then();
+                .concatMap(record -> // 🔄 uno a uno, con orden garantizado
+                        decoder.decode(record.value(), FlightseatConfirmedEvent.class)
+                                .flatMap(event ->
+                                        handler.handle(event)
+                                                .doOnSuccess(ignored -> log.info(
+                                                        "[Listener Confirmed] Procesado reservationId={}", event.reservationId()
+                                                ))
+                                )
+                                .onErrorResume(ex -> {
+                                    log.error("[Listener Confirmed] Error procesando evento", ex);
+                                    return Mono.empty(); // evitar bloqueo
+                                })
+                                .then(Mono.defer(() -> {
+                                    log.info("[Listener Confirmed] ACK offset={} partition={}", record.offset(), record.partition());
+                                    record.receiverOffset().acknowledge(); // ✅ ACK manual
+                                    return Mono.empty();
+                                }))
+                )
+                .doOnSubscribe(sub -> log.info("[Listener Confirmed] Suscrito al tópico"))
+                .doOnError(e -> log.error("[Listener Confirmed] Error en el stream general", e))
+                .then();
     }
 }
+
