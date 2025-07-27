@@ -33,12 +33,14 @@ public class FlightReservCreatedEventListenerKafka {
                 // Deserializamos el mensaje del topic a un objeto ReservationCreatedEvent
                 decoder.decode(record.value(), ReservationCreatedEvent.class)
                     // Ejecutamos la lógica de dominio para procesar la reserva
-                    .flatMap(handler::handle)
-                    // Registramos éxito del procesamiento
-                    .doOnSuccess(ok ->
-                            log.info("Evento procesado correctamente. reservationId={}", record.key())
+                    .flatMap(event ->
+                        handler.handle(event)
+                            // Registramos éxito del procesamiento
+                            .doOnSuccess(__ ->
+                                log.info("Evento procesado correctamente. reservationId={}", event.reservationId())
+                            )
                     )
-                    // Solo después de procesar con éxito, confirmamos el offset
+                    // Solo después de procesar con éxito, confirmamos el offset al broker
                     .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
             )
             // Se ejecuta una vez cuando comienza la suscripción al topic
