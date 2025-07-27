@@ -6,7 +6,7 @@ public record ReservationEmittedEvent(
 
     @Override
     public String getEventType() {
-        return "reservation.confirmated";
+        return "reservation.emitted";
     }
 
     @Override

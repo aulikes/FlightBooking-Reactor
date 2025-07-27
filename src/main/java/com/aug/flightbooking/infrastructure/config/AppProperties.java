@@ -49,7 +49,7 @@ public class AppProperties {
         @Data
         public static class Producer {
             private String reservationCreatedTopic;
-            private String reservationConfirmedTopic;
+            private String reservationEmittedTopic;
             private String flightseatConfirmedTopic;
             private String flightseatRejectedTopic;
         }
@@ -57,7 +57,7 @@ public class AppProperties {
         @Data
         public static class Consumer {
             private String reservationFlightCreatedGroupId;
-            private String reservationTicketConfirmedGroupId;
+            private String reservationFlightEmittedGroupId;
             private String flightseatReservationConfirmedGroupId;
             private String flightseatReservationRejectedGroupId;
         }

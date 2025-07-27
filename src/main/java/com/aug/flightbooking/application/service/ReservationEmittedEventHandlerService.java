@@ -1,7 +1,7 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.events.ReservationEmittedEvent;
-import com.aug.flightbooking.application.ports.in.ReservationConfirmedEventHandler;
+import com.aug.flightbooking.application.ports.in.ReservationEmittedEventHandler;
 import com.aug.flightbooking.application.ports.out.TicketRepository;
 import com.aug.flightbooking.domain.models.ticket.Ticket;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReservationConfirmedEventHandlerService implements ReservationConfirmedEventHandler {
+public class ReservationEmittedEventHandlerService implements ReservationEmittedEventHandler {
 
     private final TicketRepository ticketRepository;
 

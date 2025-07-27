@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.messaging.listener;
 
 import com.aug.flightbooking.application.events.ReservationEmittedEvent;
-import com.aug.flightbooking.application.ports.in.ReservationConfirmedEventHandler;
+import com.aug.flightbooking.application.ports.in.ReservationEmittedEventHandler;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaReceiverFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonDecoder;
@@ -17,15 +17,15 @@ import reactor.kafka.receiver.KafkaReceiver;
 public class FlightReservEmittedEventListenerKafka {
 
     private final AppProperties properties;
-    private final ReservationConfirmedEventHandler handler;
+    private final ReservationEmittedEventHandler handler;
     private final ReactiveJsonDecoder decoder;
 
     public Mono<Void> onMessage() {
         // Creamos el receptor Kafka usando configuración centralizada
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
                 properties.getKafka().getBootstrapServers(),
-                properties.getKafka().getProducer().getReservationConfirmedTopic(),
-                properties.getKafka().getConsumer().getReservationTicketConfirmedGroupId()
+                properties.getKafka().getProducer().getReservationEmittedTopic(),
+                properties.getKafka().getConsumer().getReservationFlightEmittedGroupId()
         );
 
         return receiver.receive()
@@ -44,9 +44,9 @@ public class FlightReservEmittedEventListenerKafka {
                     .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
             )
             // Se ejecuta una vez cuando comienza la suscripción al topic
-            .doOnSubscribe(sub -> log.info("FlightReservConfirmedEventListenerKafka activo"))
+            .doOnSubscribe(sub -> log.info("FlightReservEmittedEventListenerKafka activo"))
             // Manejo de errores a nivel de flujo completo
-            .doOnError(e -> log.error("Error procesando evento en FlightReservConfirmedEventListenerKafka", e))
+            .doOnError(e -> log.error("Error procesando evento en FlightReservEmittedEventListenerKafka", e))
             // Convertimos a Mono<Void> para cumplir contrato del orquestador
             .then();
     }

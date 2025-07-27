@@ -107,12 +107,12 @@ app:
 
     producer: # Un topic por cada evento
       reservation-created-topic: reservation.created
-      reservation-confirmed-topic: reservation.confirmed
+      reservation-emitted-topic: reservation.emitted
       flightseat-confirmed-topic: flightseat.confirmed
       flightseat-rejected-topic: flightseat.rejected
 
     consumer:
       reservation-flight-created-groupId: reservation-flight-created
-      reservation-ticket-confirmed-groupId: reservation-ticket-confirmed
+      reservation-flight-emitted-groupId: reservation-flight-emitted
       flightseat-reservation-confirmed-groupId: flight-reservation-confirmed
       flightseat-reservation-rejected-groupId: flight-reservation-rejected
