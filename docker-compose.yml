@@ -25,13 +25,13 @@ services:
     depends_on:
       - zookeeper                                  # Espera a que Zookeeper esté listo
     ports:
-      - "9094:9092"                                # Puerto accesible desde el host
+      - "9094:9094"                                # Puerto accesible desde el host
       - "9095:9093"                                # Puerto para otros contenedores (AKHQ)
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,DOCKER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9094,DOCKER://kafka:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -52,7 +52,7 @@ services:
           connections:
             kafka-cluster:
               properties:
-                bootstrap.servers: "kafka:9093"    # Comunicación interna entre contenedores
+                bootstrap.servers: "kafka:9095"    # Comunicación interna entre contenedores
     depends_on:
       - kafka
     networks:
