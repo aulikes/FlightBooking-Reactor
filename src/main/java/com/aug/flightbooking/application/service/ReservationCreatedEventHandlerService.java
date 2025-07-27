@@ -30,16 +30,21 @@ public class ReservationCreatedEventHandlerService implements ReservationCreated
     @Override
     public Mono<Void> handle(ReservationCreatedEvent event) {
         // Generar número entre 0 y 99
-        int random = ThreadLocalRandom.current().nextInt(100);
-
-        // Si está en el 30% inicial, no hace nada para establecer timeout con REDIS
-        if (random < 30) {
-            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
-            return Mono.empty();
-        }
+//        int random = ThreadLocalRandom.current().nextInt(100);
+//
+//        // Si está en el 30% inicial, no hace nada para establecer timeout con REDIS
+//        if (random < 30) {
+//            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
+//            return Mono.empty();
+//        }
 
         return flightRepository.findById(event.flightId())
+            .switchIfEmpty(Mono.defer(() -> {
+                log.error("[handle][reservationId={}] flight NO encontrado: flightId={}", event.reservationId(), event.flightId());
+                return Mono.empty(); // Aquí salimos si no existe el vuelo
+            }))
             .flatMap(flight -> {
+                log.info("[handle][reservationId={}] flight encontrado: flightId={}", event.reservationId(), event.flightId());
                 if (flight.tryReserveSeat()) {
                     return flightRepository.save(flight)
                         .then(flightseatConfirmedEventPublisher.publish(
@@ -49,7 +54,6 @@ public class ReservationCreatedEventHandlerService implements ReservationCreated
                         new FlightseatRejectedEvent(event.reservationId(), "No Seat"));
                 }
             })
-            .switchIfEmpty(Mono.error(new IllegalArgumentException("Flight Not Found " + event.flightId())))
             .onErrorResume(ex -> {
                 if (ex instanceof IllegalArgumentException) {
                     log.warn("Negocio: {}", ex.getMessage());

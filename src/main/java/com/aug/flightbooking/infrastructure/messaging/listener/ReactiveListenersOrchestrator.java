@@ -15,13 +15,21 @@ public class ReactiveListenersOrchestrator {
     private final ReservFlightseatConfirmedEventListenerKafka confirmedListener;
     private final ReservFlightseatRejectedEventListenerKafka rejectedListener;
 
+    /**
+     * Método que activa todos los listeners compartidos.
+     * Solo se activa cuando alguien se suscribe.
+     */
     public Mono<Void> startAllListeners() {
+        log.info("Activando todos los listeners reactivos...");
         return Mono.when(
             flightCreatedListener.onMessage(),
             flightEmittedListener.onMessage(),
             confirmedListener.onMessage(),
             rejectedListener.onMessage()
-        ).doOnSuccess(v -> log.info("Todos los listeners han sido activados"));
+        )
+        .doOnSubscribe(sub -> log.info("ReactiveListenersOrchestrator: iniciando listeners..."))
+        .doOnSuccess(v -> log.info("Todos los listeners han sido activados"))
+        .cache(); // <- evita múltiples suscripciones y re-ejecuciones
     }
 }
 

@@ -30,6 +30,7 @@ public class FlightseatRejectedEventPublisherKafka implements FlightseatRejected
     public Mono<Void> publish(FlightseatRejectedEvent event) {
         String key = event.getTraceId();
         String topic = properties.getFlightseatRejectedTopic();
+        Long reservationId = event.reservationId();
 
         return encoder.encode(event)
                 .map(payload -> {
@@ -40,7 +41,7 @@ public class FlightseatRejectedEventPublisherKafka implements FlightseatRejected
                         kafkaSender.send(Mono.just(senderRecord)).next()
                 )
                 .doOnNext(result ->
-                        log.info("Evento FlightseatRejected publicado correctamente: {}", key)
+                        log.info("Evento FlightseatRejected publicado correctamente, reservationId: {}", reservationId)
                 )
                 .doOnError(error ->
                         log.error("Error al publicar FlightseatRejected: {}", error.getMessage(), error)

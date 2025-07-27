@@ -30,6 +30,7 @@ public class ReservationCreatedEventPublisherKafka implements ReservationCreated
     public Mono<Void> publish(ReservationCreatedEvent event) {
         String key = event.getTraceId();
         String topic = properties.getReservationCreatedTopic();
+        Long reservationId = event.reservationId();
 
         return encoder.encode(event)
             .map(payload -> {
@@ -40,7 +41,7 @@ public class ReservationCreatedEventPublisherKafka implements ReservationCreated
                     kafkaSender.send(Mono.just(senderRecord)).next()
             )
             .doOnNext(result ->
-                    log.info("Evento ReservationCreated publicado exitosamente: {}", key)
+                    log.info("Evento ReservationCreated publicado exitosamente, reservationId: {}", reservationId)
             )
             .doOnError(error ->
                     log.error("Error publicando ReservationCreated: {}", error.getMessage(), error)

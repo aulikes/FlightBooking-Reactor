@@ -30,6 +30,7 @@ public class FlightseatConfirmedEventPublisherKafka implements FlightseatConfirm
     public Mono<Void> publish(FlightseatConfirmedEvent event) {
         String key = event.getTraceId();
         String topic = properties.getFlightseatConfirmedTopic();
+        Long reservationId = event.reservationId();
 
         return encoder.encode(event)
             .map(payload -> {
@@ -40,7 +41,7 @@ public class FlightseatConfirmedEventPublisherKafka implements FlightseatConfirm
                     kafkaSender.send(Mono.just(senderRecord)).next()
             )
             .doOnNext(result ->
-                    log.info("Evento FlightseatConfirmed publicado correctamente: {}", key)
+                    log.info("Evento FlightseatConfirmed publicado correctamente, reservationId: {}", reservationId)
             )
             .doOnError(error ->
                     log.error("Error al publicar FlightseatConfirmed: {}", error.getMessage(), error)

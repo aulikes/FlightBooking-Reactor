@@ -52,7 +52,7 @@ services:
           connections:
             kafka-cluster:
               properties:
-                bootstrap.servers: "kafka:9095"    # Comunicación interna entre contenedores
+                bootstrap.servers: "kafka:9093"    # Comunicación interna entre contenedores
     depends_on:
       - kafka
     networks:

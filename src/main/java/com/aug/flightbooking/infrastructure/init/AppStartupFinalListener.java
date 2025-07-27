@@ -79,9 +79,9 @@ public class AppStartupFinalListener {
                 // Se lanza el Scheduler en un flujo paralelo.
                 // No se encadena al flujo principal (no se espera su resultado).
                 // Indica que se ejecute en un hilo de tipo "elastic" (apto para tareas largas, como el scheduler).
-                timeoutScheduler.startSchedulerReservations()
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe();
+//                timeoutScheduler.startSchedulerReservations()
+//                        .subscribeOn(Schedulers.boundedElastic())
+//                        .subscribe();
             })
             .doOnError(ex -> {
                 log.error("Error durante inicio de la aplicación: {}", ex.getMessage(), ex);
