@@ -6,7 +6,7 @@ spring:
   application:
     name: flightbooking
   profiles:
-    active: dev #dev kafka
+    active: dev
 
 #  statemachine:
 #    auto-startup: true
@@ -48,7 +48,7 @@ spring:
 ---
 
 server:
-  port: 8080
+  port: 8095
 
 ---
 
@@ -89,7 +89,7 @@ app:
       enabled: false  # no usamos repositorios Spring Data comunes
 
     redis-reservation:
-      host: localhost
+      host: redis
       port: 6379
       database: 0   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
       reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
@@ -97,12 +97,12 @@ app:
       key-prefix-reservation-cache: reservation.timeout.
 
     redis-flight:
-      host: localhost
+      host: redis
       port: 6379
       database: 1   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
 
   kafka:
-    bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación
+    bootstrap-servers: kafka:9092 # Dirección del broker de Kafka al que se conectará la aplicación
     orden-consumer-group: orden-consumer-group
 
     producer: # Un topic por cada evento
