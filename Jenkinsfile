@@ -58,7 +58,7 @@ pipeline {
           sh "docker rm -f ${DOCKER_IMAGE} || true"
           // Run new container on port 8090
           sh "docker run -d \
-            --network ecommerce-net \
+            --network ${DOCKER_NETWORK} \
             -e SPRING_PROFILE=${SPRING_PROFILE} \
             -p ${DOCKER_PORT}:${DOCKER_PORT} \
             --name ${DOCKER_IMAGE} ${DOCKER_IMAGE}"
