@@ -6,7 +6,7 @@ Este proyecto es una **prueba de concepto (POC)** para demostrar un sistema de r
 Su propósito es **explorar cómo construir una solución moderna y desacoplada**, aplicando buenas prácticas arquitectónicas, patrones de diseño y tecnologías de última generación como **WebFlux, Reactor Core, Redis y Kafka**.
 
 ## ⚙️ Tecnologías Clave
-- **Spring Boot 3 + WebFlux**
+- **Spring Boot 3.5 + WebFlux**
 - **Project Reactor (Reactor Core)**
 - **PostgreSQL (con R2DBC)**
 - **Redis** para estado temporal y control de TTL
@@ -43,6 +43,46 @@ Cada evento tiene su propio:
 - **Listener:** desacopla y responde de forma reactiva
 
 Esto permite trazabilidad, resiliencia y mantenimiento independiente.
+
+---
+
+## 🧩 Diagrama de flujo
+
+```mermaid
+flowchart TD
+
+    %% --- Creación de Reserva ---
+    A1([POST /reservations]) --> A2[ReservationCreateCommandHandler]
+    A2 --> A3["Guardar en PostgreSQL (estado: CREATED)"]
+    A2 --> A4["Redis: registerTimeout()"]
+    A4 --> A5["Clave: reservation:timeout:{id} con TTL"]
+    A2 --> A6["Kafka: reservation.created"]
+
+    %% --- Listener: FlightReservCreatedEventListenerKafka ---
+    A6 --> B1[Listener: FlightReservCreatedEventListenerKafka]
+    B1 --> B2{Asiento disponible?}
+    B2 -- Sí --> B3["Kafka: flightseat.confirmed"]
+    B2 -- No --> B4["Kafka: flightseat.rejected"]
+
+    %% --- Listener: ReservFlightseatConfirmedEventListenerKafka ---
+    B3 --> C1[Listener: ReservFlightseatConfirmedEventListenerKafka]
+    C1 --> C2["Actualizar estado: CONFIRMED"]
+    C2 --> C3["Redis: delete(reservationId)"]
+
+    %% --- Listener: ReservFlightseatRejectedEventListenerKafka ---
+    B4 --> D1[Listener: ReservFlightseatRejectedEventListenerKafka]
+    D1 --> D2["Actualizar estado: REJECTED"]
+    D2 --> D3["Redis: delete(reservationId)"]
+
+    %% --- Scheduler: ReservationTimeoutScheduler ---
+    E1["Scheduler: cada N segundos"] --> E2["Buscar reservas CREATED expiradas en DB"]
+    E2 --> E3["Por cada reserva → Redis: get(reservationId)"]
+    E3 --> E4{Existe en Redis?}
+    E4 -- Sí --> E5["Marcar como FAILED"]
+    E4 -- No --> E6["Ignorar"]
+```
+
+## Consideraciones
 
 ### 🧠 Uso de Redis
 Redis se utiliza como:
@@ -81,27 +121,149 @@ Gracias al uso combinado de WebFlux + Reactor Core:
 ## ✅ Conclusión
 Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar sistemas distribuidos reactivos en Java. Es ideal para estudios de arquitectura avanzada, diseño de eventos, y adopción de WebFlux en entornos exigentes.
 
+
 ---
 
 ## 🗂️ Estructura de Proyecto: Arquitectura Hexagonal
 
 ```
-└── src
-    └── main
-        └── java
-            └── com
-                └── aug
-                    └── flightbooking
-                        ├── application         -> Casos de uso, orquestación, publicación y consumo de eventos
-                        │   ├── handler         -> Listeners reactivos de eventos Kafka
-                        │   ├── service         -> Lógica de casos de uso: crear reserva, check-in, emitir ticket
-                        │   └── gateway         -> Interfaces que abstraen Kafka, Redis, y persistencia
-                        ├── domain              -> Entidades puras (Reservation, Ticket), Value Objects, lógica de negocio
-                        ├── infrastructure      -> Implementaciones concretas (R2DBC, Kafka, Redis)
-                        │   ├── repository      -> Persistencia reactiva (PostgreSQL)
-                        │   ├── publisher       -> Publicación de eventos Kafka
-                        │   ├── listener        -> Adaptadores de eventos entrantes
-                        │   └── config          -> Configuración de Beans, Kafka, Redis
-                        └── adapter
-                            └── rest            -> Controladores WebFlux (API REST reactiva)
+src/main/java/com/aug/flightbooking
+├── FlightBookingApplication.java                     # Clase principal que arranca la app Spring Boot
+│
+├── application                                        # Lógica de aplicación (casos de uso)
+│   ├── command
+│   │   ├── CreateCheckInCommand.java                 # Comando para realizar check-in
+│   │   ├── CreateFlightCommand.java                  # Comando para crear un vuelo
+│   │   └── CreateReservationCommand.java             # Comando para crear una reserva
+│   │
+│   ├── events
+│   │   ├── FlightseatConfirmedEvent.java             # Evento: asiento confirmado
+│   │   ├── FlightseatRejectedEvent.java              # Evento: asiento rechazado
+│   │   ├── ReservationConfirmedEvent.java            # Evento: reserva confirmada
+│   │   ├── ReservationCreatedEvent.java              # Evento: reserva creada
+│   │   ├── ReservationFailedEvent.java               # Evento: reserva fallida
+│   │   └── IntegrationEvent.java                     # Interfaz base para todos los eventos
+│   │
+│   ├── ports
+│   │   ├── in
+│   │   │   ├── CheckInTicketUseCase.java             # Caso de uso: check-in de ticket
+│   │   │   ├── CreateFlightUseCase.java              # Caso de uso: creación de vuelo
+│   │   │   ├── CreateReservationUseCase.java         # Caso de uso: creación de reserva
+│   │   │   ├── FailReservationUseCase.java           # Caso de uso: marcar reserva como fallida
+│   │   │   ├── FlightseatConfirmedEventHandler.java  # Manejador: evento asiento confirmado
+│   │   │   ├── FlightseatRejectedEventHandler.java   # Manejador: evento asiento rechazado
+│   │   │   └── ReservationCreatedEventHandler.java   # Manejador: evento reserva creada
+│   │   │
+│   │   └── out
+│   │       ├── FlightRepository.java                 # Abstracción repositorio de vuelos
+│   │       ├── ReservationRepository.java            # Abstracción repositorio de reservas
+│   │       ├── TicketRepository.java                 # Abstracción repositorio de tickets
+│   │       ├── ReservationCache.java                 # Abstracción de caché de reservas
+│   │       ├── FlightseatConfirmedEventPublisher.java # Publisher: evento asiento confirmado
+│   │       ├── FlightseatRejectedEventPublisher.java  # Publisher: evento asiento rechazado
+│   │       ├── ReservationConfirmedEventPublisher.java # Publisher: evento reserva confirmada
+│   │       └── ReservationCreatedEventPublisher.java   # Publisher: evento reserva creada
+│   │
+│   ├── result
+│   │   └── ReservationResult.java                    # Resultado de proceso de reserva
+│   │
+│   └── service
+│       ├── CheckInTicketService.java                 # Servicio: check-in de tickets
+│       ├── CreateFlightService.java                  # Servicio: creación de vuelos
+│       ├── CreateReservationService.java             # Servicio: creación de reservas
+│       ├── FailReservationService.java               # Servicio: marca reserva como fallida
+│       ├── FlightseatConfirmedEventHandlerService.java # Manejador evento: asiento confirmado
+│       ├── FlightseatRejectedEventHandlerService.java  # Manejador evento: asiento rechazado
+│       └── ReservationCreatedEventHandlerService.java  # Manejador evento: reserva creada
+│
+├── domain
+│   ├── model
+│   │   ├── Airline.java                              # Entidad: Aerolínea
+│   │   ├── Flight.java                               # Entidad: Vuelo
+│   │   ├── FlightStatus.java                         # Enum: estado del vuelo
+│   │   ├── PassengerInfo.java                        # Value Object: info pasajero
+│   │   ├── Reservation.java                          # Entidad: Reserva
+│   │   ├── ReservationStateMachine.java              # Máquina de estados de reserva
+│   │   ├── ReservationStatus.java                    # Enum: estado de reserva
+│   │   ├── ReservationStatusAction.java              # Enum: acción según estado
+│   │   ├── Ticket.java                               # Entidad: Ticket
+│   │   └── TicketStatus.java                         # Enum: estado de ticket
+│   │
+│   └── exception
+│       └── ReservationChangeStatusException.java     # Excepción cambio inválido de estado
+│
+├── infrastructure
+│   ├── cache
+│   │   ├── RedisReservationCache.java                # Implementación Redis del caché
+│   │   └── ReservationTimeoutScheduler.java          # Scheduler para timeout de reservas
+│   │
+│   ├── config
+│   │   ├── AppProperties.java                        # Propiedades cargadas desde config
+│   │   ├── JdbcDataSourceConfig.java                 # Configuración para PostgreSQL R2DBC
+│   │   ├── KafkaReceiverFactory.java                 # Factory para listeners Kafka
+│   │   ├── KafkaSenderFactory.java                   # Factory para productores Kafka
+│   │   └── RedisConfig.java                          # Configuración cliente Redis
+│   │
+│   ├── init
+│   │   ├── AppStartupFinalListener.java              # Listener de arranque para iniciar listeners
+│   │   ├── FlightDataInitializer.java                # Inicializador de datos de vuelos
+│   │   └── ReservationDataInitializer.java           # Inicializador de datos de reservas
+│   │
+│   ├── messaging
+│   │   ├── IntegrationEventWrapper.java              # Envoltura común para eventos
+│   │   ├── listener
+│   │   │   ├── FlightReservCreatedEventListenerKafka.java    # Listener reserva creada
+│   │   │   ├── ReactiveListenersOrchestrator.java             # Orquestador de listeners Kafka
+│   │   │   ├── ReservFlightseatConfirmedEventListenerKafka.java # Listener asiento confirmado
+│   │   │   └── ReservFlightseatRejectedEventListenerKafka.java  # Listener asiento rechazado
+│   │   │
+│   │   ├── publisher
+│   │   │   ├── FlightseatConfirmedEventPublisherKafka.java    # Publisher Kafka asiento confirmado
+│   │   │   ├── FlightseatRejectedEventPublisherKafka.java     # Publisher Kafka asiento rechazado
+│   │   │   ├── ReservationConfirmedEventPublisherKafka.java   # Publisher Kafka reserva confirmada
+│   │   │   └── ReservationCreatedEventPublisherKafka.java     # Publisher Kafka reserva creada
+│   │   │
+│   │   └── serialization
+│   │       ├── ReactiveJsonDecoder.java              # Decoder JSON no bloqueante
+│   │       └── ReactiveJsonEncoder.java              # Encoder JSON no bloqueante
+│   │
+│   ├── repository
+│   │   ├── adapter
+│   │   │   ├── FlightRepositoryAdapter.java          # Adaptador repositorio vuelo
+│   │   │   ├── ReservationRepositoryAdapter.java     # Adaptador repositorio reserva
+│   │   │   └── TicketRepositoryAdapter.java          # Adaptador repositorio ticket
+│   │   │
+│   │   ├── entity
+│   │   │   ├── FlightEntity.java                     # Entidad JPA persistente: vuelo
+│   │   │   ├── ReservationEntity.java                # Entidad JPA persistente: reserva
+│   │   │   └── TicketEntity.java                     # Entidad JPA persistente: ticket
+│   │   │
+│   │   ├── mapper
+│   │   │   ├── FlightMapper.java                     # Mapper vuelo: entidad ↔ dominio
+│   │   │   ├── ReservationMapper.java                # Mapper reserva: entidad ↔ dominio
+│   │   │   └── TicketPersistenceMapper.java          # Mapper ticket: entidad ↔ dominio
+│   │   │
+│   │   └── r2dbc
+│   │       ├── R2dbcFlightRepository.java            # Repositorio R2DBC vuelo
+│   │       ├── R2dbcReservationRepository.java       # Repositorio R2DBC reserva
+│   │       └── R2dbcTicketRepository.java            # Repositorio R2DBC ticket
+│   │
+│   └── web
+│       ├── controller
+│       │   ├── FlightController.java                 # Controlador REST para vuelos
+│       │   ├── ReservationController.java            # Controlador REST para reservas
+│       │   └── TicketCheckInController.java          # Controlador REST para check-in
+│       │
+│       ├── dto
+│       │   ├── CheckInRequest.java                   # DTO entrada para check-in
+│       │   ├── FlightCreateRequest.java              # DTO entrada para creación de vuelo
+│       │   ├── FlightCreateResponse.java             # DTO salida tras crear vuelo
+│       │   ├── ReservationRequest.java               # DTO entrada para reserva
+│       │   └── ReservationResponse.java              # DTO salida para reserva
+│       │
+│       └── mapper
+│           ├── CheckInCreateMapper.java             # Mapper entre DTO y dominio para check-in
+│           ├── FlightCreateMapper.java              # Mapper entre DTO y dominio para vuelo
+│           └── ReservationCreateMapper.java         # Mapper entre DTO y dominio para reserva
+
 ```
