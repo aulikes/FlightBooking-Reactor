@@ -14,8 +14,8 @@ spring:
 
   # Conexión de la aplicación con PostgreSQL
   r2dbc:
-    urlJdbc: jdbc:postgresql://postgres:5444/flightbooking
-    url: r2dbc:postgresql://postgres:5444/flightbooking
+    urlJdbc: jdbc:postgresql://localhost:5444/flightbooking
+    url: r2dbc:postgresql://localhost:5444/flightbooking
     username: devuser
     password: devpass
 
@@ -36,7 +36,7 @@ spring:
 
 
   kafka:
-    bootstrap-servers: localhost:9092 # Dirección del broker de Kafka al que se conectará la aplicación
+    bootstrap-servers: localhost:9094 # Dirección del broker de Kafka al que se conectará la aplicación
     consumer:
       auto-offset-reset: earliest # Si no hay offset guardado, empieza a consumir desde el primer mensaje del topic
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Deserializador para la clave del mensaje recibido
@@ -89,20 +89,20 @@ app:
       enabled: false  # no usamos repositorios Spring Data comunes
 
     redis-reservation:
-      host: redis
-      port: 6379
+      host: localhost
+      port: 6380
       database: 0   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
-      reservation-timeout-seconds: 300  # 5 minutos, tiempo de vida de las reservas en Redis
+      reservation-timeout-seconds: 120  # en segundos, tiempo de vida de las reservas en Redis
       period-flux-seconds: 30 # periodo de ejecución del scheduler
       key-prefix-reservation-cache: reservation.timeout.
 
     redis-flight:
-      host: redis
-      port: 6379
+      host: localhost
+      port: 6380
       database: 1   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
 
   kafka:
-    bootstrap-servers: kafka:9092 # Dirección del broker de Kafka al que se conectará la aplicación
+    bootstrap-servers: localhost:9094 # Dirección del broker de Kafka al que se conectará la aplicación
     orden-consumer-group: orden-consumer-group
 
     producer: # Un topic por cada evento

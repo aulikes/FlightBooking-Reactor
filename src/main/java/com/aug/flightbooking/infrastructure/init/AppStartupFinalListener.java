@@ -2,14 +2,14 @@ package com.aug.flightbooking.infrastructure.init;
 
 import com.aug.flightbooking.infrastructure.cache.ReservationTimeoutScheduler;
 import com.aug.flightbooking.infrastructure.messaging.listener.ReactiveListenersOrchestrator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -18,12 +18,11 @@ import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@RequiredArgsConstructor
 @Component
 @Slf4j
 public class AppStartupFinalListener {
 
-    private final ReactiveRedisConnectionFactory redisConnectionFactory;
+    private final ReactiveRedisTemplate<String, String> redisTemplate;
     private final ReservationTimeoutScheduler timeoutScheduler;
     private final FlightDataInitializer flightDataInitializer;
     private final ReservationDataInitializer reservationDataInitializer;
@@ -31,6 +30,20 @@ public class AppStartupFinalListener {
 
     @Value("${app.kafka.bootstrap-servers}")
     private String kafkaBootstrapServers;
+
+    public AppStartupFinalListener(
+            @Qualifier("reservationRedisTemplate") ReactiveRedisTemplate<String, String> redisTemplate,
+            ReservationTimeoutScheduler timeoutScheduler,
+            FlightDataInitializer flightDataInitializer,
+            ReservationDataInitializer reservationDataInitializer,
+            ReactiveListenersOrchestrator reactiveListenersOrchestrator
+    ) {
+        this.redisTemplate = redisTemplate;
+        this.timeoutScheduler = timeoutScheduler;
+        this.flightDataInitializer = flightDataInitializer;
+        this.reservationDataInitializer = reservationDataInitializer;
+        this.reactiveListenersOrchestrator = reactiveListenersOrchestrator;
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
@@ -45,7 +58,6 @@ public class AppStartupFinalListener {
          */
         Mono.when(redisReady, kafkaReady)
             .doOnSuccess(v -> log.info("Redis y Kafka están listos..."))
-//            .then(flightDataInitializer.init()) // Mono<List<FlightCreateResponse>>
             .then(Mono.defer(() -> {
                 // redisReady y kafkaReady emiten un VOID, por eso se debe usar THEN, y no FLATMAP
                 // Si se utiliza FLATMAP el flujo no entra debido a que espera un valor y los que se emite anteriormente es VOID
@@ -80,19 +92,29 @@ public class AppStartupFinalListener {
 
     private Mono<Void> waitForRedisReady() {
         AtomicInteger attempt = new AtomicInteger(0);
-
         return Mono.defer(() -> {
-                    int tick = attempt.getAndIncrement();
-                    log.info("[{}] Enviando ping a Redis...", tick);
-                    return redisConnectionFactory.getReactiveConnection().ping()
-                            .doOnNext(pong -> log.info("[{}] Redis respondió con: {}", tick, pong))
-                            .filter("PONG"::equalsIgnoreCase);
-                })
-                .repeatWhenEmpty(repeat -> repeat.delayElements(Duration.ofSeconds(5)))
-                .timeout(Duration.ofMinutes(2))
-                .doOnSuccess(pong -> log.info("Redis está listo"))
-                .doOnError(e -> log.error("Redis no respondió a tiempo: {}", e.getMessage()))
-                .then();
+            int tick = attempt.getAndIncrement();
+            // Imprime en el log que se está intentando contactar a Redis
+            log.info("[{}] Enviando SET de prueba a Redis...", tick);
+
+            // Intenta guardar una clave temporal ("redis-healthcheck") con valor "ok" por 5 segundos
+            return redisTemplate.opsForValue()
+                    .set("redis-healthcheck", "ok", Duration.ofSeconds(5)) // TTL = 5 segundos
+                    .doOnNext(success -> {
+                        if (Boolean.TRUE.equals(success)) {
+                            log.info("Redis respondió correctamente al SET");
+                        } else {
+                            log.warn("Redis respondió al SET, pero no confirmó éxito");
+                        }
+                    });
+        })
+        // Si falla, reintenta cada 5 segundos
+        .repeatWhenEmpty(repeat -> repeat.delayElements(Duration.ofSeconds(5)))
+        // Límite de espera total: 2 minutos
+        .timeout(Duration.ofMinutes(2))
+        .doOnSuccess(v -> log.info("Redis está listo"))
+        .doOnError(e -> log.error("Redis no respondió a tiempo: {}", e.getMessage()))
+        .then(); // Devuelve Mono<Void>
     }
 
     private Mono<Void> waitForKafkaReady() {
