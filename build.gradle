@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 	id "org.sonarqube" version "6.2.0.5505"
 }
 
@@ -78,8 +79,25 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// Plataforma de pruebas
 tasks.named('test') {
 	useJUnitPlatform()
+	include '**/*Test.class' // Solo pruebas unitarias
+	finalizedBy jacocoTestReport
+}
+
+tasks.register('integrationTest', Test) {
+	include '**/*IT.class'   // Solo pruebas de integración
+	shouldRunAfter test
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
 }
 
 sonar {
