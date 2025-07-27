@@ -7,6 +7,7 @@ package com.aug.flightbooking.domain.models.reservation;
 public enum ReservationStatus {
     CREATED,            //La reserva ha sido creada, pero aún no se ha notificado a la aerolínea.
     PENDING,            //La reserva fue creada y el evento fue enviado exitosamente a la aerolínea.
+    EMITTED,            //La reserva está en espera de que se cree el Ticket
     CONFIRMED,          //La reserva fue confirmada exitosamente.
     REJECTED,           //La reserva fue rechazada.
     CANCELLED,          //La reserva fue cancelada.

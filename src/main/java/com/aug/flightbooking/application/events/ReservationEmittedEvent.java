@@ -1,6 +1,6 @@
 package com.aug.flightbooking.application.events;
 
-public record ReservationConfirmedEvent(
+public record ReservationEmittedEvent(
     Long reservationId
 ) implements IntegrationEvent {
 

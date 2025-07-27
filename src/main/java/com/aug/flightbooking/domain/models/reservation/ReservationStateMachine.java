@@ -17,7 +17,10 @@ public class ReservationStateMachine {
                 EnumSet.of(ReservationStatus.PENDING, ReservationStatus.FAILED));
 
         validTransitions.put(ReservationStatus.PENDING,
-                EnumSet.of(ReservationStatus.CONFIRMED, ReservationStatus.REJECTED, ReservationStatus.FAILED));
+                EnumSet.of(ReservationStatus.EMITTED, ReservationStatus.REJECTED, ReservationStatus.FAILED));
+
+        validTransitions.put(ReservationStatus.EMITTED,
+                EnumSet.of(ReservationStatus.CANCELLED, ReservationStatus.CONFIRMED));
 
         validTransitions.put(ReservationStatus.CONFIRMED,
                 EnumSet.of(ReservationStatus.CANCELLED));

@@ -13,6 +13,12 @@ public enum ReservationStatusAction {
             reservation.markAsPending();
         }
     },
+    EMITTED {
+        @Override
+        public void apply(Reservation reservation) throws ReservationChangeStatusException {
+            reservation.markAsEmitted();
+        }
+    },
     CONFIRMED {
         @Override
         public void apply(Reservation reservation) throws ReservationChangeStatusException {

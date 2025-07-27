@@ -32,6 +32,9 @@ databaseChangeLog:
                   name: status
                   type: VARCHAR(30)
               - column:
+                  name: message
+                  type: VARCHAR(2000)
+              - column:
                   name: created_at
                   type: TIMESTAMP
         - addForeignKeyConstraint:

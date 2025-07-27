@@ -58,7 +58,7 @@ public class RedisConfig {
     RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(host, port);
     redisConfig.setDatabase(db);
 
-    /**
+    /*
      * Configura el cliente Lettuce con opciones de alto rendimiento:
      * - Timeout de comandos
      * - Reconexión automática

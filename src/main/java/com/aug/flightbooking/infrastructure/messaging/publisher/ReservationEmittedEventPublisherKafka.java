@@ -1,7 +1,7 @@
 package com.aug.flightbooking.infrastructure.messaging.publisher;
 
-import com.aug.flightbooking.application.events.ReservationConfirmedEvent;
-import com.aug.flightbooking.application.ports.out.ReservationConfirmedEventPublisher;
+import com.aug.flightbooking.application.events.ReservationEmittedEvent;
+import com.aug.flightbooking.application.ports.out.ReservationEmittedEventPublisher;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
 import com.aug.flightbooking.infrastructure.config.KafkaSenderFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonEncoder;
@@ -14,20 +14,20 @@ import reactor.kafka.sender.SenderRecord;
 
 @Component
 @Slf4j
-public class ReservationConfirmedEventPublisherKafka implements ReservationConfirmedEventPublisher {
+public class ReservationEmittedEventPublisherKafka implements ReservationEmittedEventPublisher {
 
     private final KafkaSender<String, byte[]> kafkaSender;
     private final AppProperties.Kafka.Producer properties;
     private final ReactiveJsonEncoder encoder;
 
-    public ReservationConfirmedEventPublisherKafka(AppProperties properties, ReactiveJsonEncoder encoder) {
+    public ReservationEmittedEventPublisherKafka(AppProperties properties, ReactiveJsonEncoder encoder) {
         this.encoder = encoder;
         this.properties = properties.getKafka().getProducer();
         this.kafkaSender = KafkaSenderFactory.createSender(properties.getKafka().getBootstrapServers());
     }
 
     @Override
-    public Mono<Void> publish(ReservationConfirmedEvent event) {
+    public Mono<Void> publish(ReservationEmittedEvent event) {
         String key = event.getTraceId();
         Long reservationId = event.reservationId();
         String topic = properties.getReservationConfirmedTopic();

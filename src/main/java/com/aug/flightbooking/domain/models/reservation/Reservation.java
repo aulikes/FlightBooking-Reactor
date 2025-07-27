@@ -15,27 +15,31 @@ public class Reservation {
     private final Long flightId;
     private final PassengerInfo passengerInfo;
     private final Instant createdAt;
+    private String message;
     private ReservationStatus status;
 
-    private Reservation(Long id, Long flightId, PassengerInfo passengerInfo, ReservationStatus status, Instant createdAt) {
+    private Reservation(Long id, Long flightId, PassengerInfo passengerInfo, ReservationStatus status,
+                        Instant createdAt, String message) {
         this.id = id;
         this.flightId = Objects.requireNonNull(flightId, "El flightId no puede ser null");
         this.passengerInfo = Objects.requireNonNull(passengerInfo, "El passengerInfo no puede ser null");
         this.status = Objects.requireNonNull(status, "El status no puede ser null");
         this.createdAt = Objects.requireNonNull(createdAt, "El createdAt no puede ser null");
+        this.message = message;
     }
 
     public static Reservation fromPersistence(
-            Long id, Long flightId, PassengerInfo passengerInfo, ReservationStatus status, Instant createdAt) {
+            Long id, Long flightId, PassengerInfo passengerInfo, ReservationStatus status,
+            Instant createdAt, String message) {
         if (id == null) throw new IllegalArgumentException("El id no puede ser nulo");
-        return new Reservation(id, flightId, passengerInfo, status, createdAt);
+        return new Reservation(id, flightId, passengerInfo, status, createdAt, message);
     }
 
     /**
      * Crea una nueva reserva con estado inicial CREATED.
      */
     public static Reservation create(Long flightId, PassengerInfo passengerInfo) {
-        return new Reservation(null, flightId, passengerInfo, ReservationStatus.CREATED, Instant.now());
+        return new Reservation(null, flightId, passengerInfo, ReservationStatus.CREATED, Instant.now(), null);
     }
 
     /**
@@ -50,6 +54,12 @@ public class Reservation {
      */
     protected void markAsConfirmed(){
         changeStatus(ReservationStatus.CONFIRMED);
+    }
+    /**
+     * Marca la reserva como confirmada
+     */
+    protected void markAsEmitted(){
+        changeStatus(ReservationStatus.EMITTED);
     }
 
     /**
@@ -94,6 +104,14 @@ public class Reservation {
 
     public ReservationStatus getStatus() {
         return status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override

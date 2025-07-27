@@ -1,10 +1,10 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.events.ReservationConfirmedEvent;
+import com.aug.flightbooking.application.events.ReservationEmittedEvent;
 import com.aug.flightbooking.application.ports.in.FlightseatConfirmedEventHandler;
 import com.aug.flightbooking.application.ports.out.ReservationCache;
-import com.aug.flightbooking.application.ports.out.ReservationConfirmedEventPublisher;
+import com.aug.flightbooking.application.ports.out.ReservationEmittedEventPublisher;
 import com.aug.flightbooking.domain.models.reservation.ReservationStatusAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +21,15 @@ import reactor.core.publisher.Mono;
 public class FlightseatConfirmedEventHandlerService implements FlightseatConfirmedEventHandler {
 
     private final ReservationStatusUpdater reservationStatusUpdater;
-    private final ReservationConfirmedEventPublisher ReservationConfirmedEventPublisher;
+    private final ReservationEmittedEventPublisher reservationEmittedEventPublisher;
     private final ReservationCache reservationCache;
 
     /**
-     * Maneja el evento de asiento confirmado y actualiza el estado de la reserva a CONFIRMED.
+     * Maneja el evento de asiento confirmado y actualiza el estado de la reserva a WAITING.
      */
     @Override
     public Mono<Void> handle(FlightseatConfirmedEvent event) {
-        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.CONFIRMED)
+        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.EMITTED)
             .onErrorResume(error -> {
                 log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
                 return Mono.empty();
@@ -41,7 +41,7 @@ public class FlightseatConfirmedEventHandlerService implements FlightseatConfirm
                             log.error("Error cancelando timeout de reserva {}", event.reservationId(), error);
                             return Mono.empty();
                         }),
-                    ReservationConfirmedEventPublisher.publish(new ReservationConfirmedEvent(event.reservationId()))
+                        reservationEmittedEventPublisher.publish(new ReservationEmittedEvent(event.reservationId()))
                         .onErrorResume(error -> {
                             log.error("Error publicando evento", error);
                             return Mono.empty();

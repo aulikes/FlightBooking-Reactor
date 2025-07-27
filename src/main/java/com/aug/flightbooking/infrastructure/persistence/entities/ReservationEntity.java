@@ -26,6 +26,9 @@ public class ReservationEntity {
     @Column("status")
     private String status;
 
+    @Column("message")
+    private String message;
+
     @Column("created_at")
     private Instant createdAt;
 }

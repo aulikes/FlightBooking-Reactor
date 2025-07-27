@@ -32,7 +32,7 @@ public class Ticket {
     /**
      * Crea un nuevo tiquete emitido, marcando su estado inicial como EMITTED.
      */
-    public static Ticket create(Long reservationId, Long flightId, LocalDateTime issuedAt) {
+    public static Ticket create(Long reservationId) {
         return new Ticket(null, reservationId, TicketStatus.EMITTED, Instant.now());
     }
 

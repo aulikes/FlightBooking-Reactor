@@ -16,6 +16,7 @@ public class ReservationMapper {
         entity.setPassengerDocumentId(reservation.getPassengerInfo().getDocumentId());
         entity.setStatus(reservation.getStatus().name());
         entity.setCreatedAt(reservation.getCreatedAt());
+        entity.setMessage(reservation.getMessage());
         return entity;
     }
 
@@ -26,7 +27,8 @@ public class ReservationMapper {
                 entity.getFlightId(),
                 new PassengerInfo(entity.getPassengerFullName(), entity.getPassengerDocumentId()),
                 ReservationStatus.valueOf(entity.getStatus()),
-                entity.getCreatedAt()
+                entity.getCreatedAt(),
+                entity.getMessage()
         );
     }
 }
