@@ -6,6 +6,7 @@ pipeline {
     DOCKER_IMAGE = 'flightbooking-api'
     DOCKER_PORT = '8095'
     SPRING_PROFILE = 'dev'
+    DOCKER_NETWORK = 'flightbooking-net'
   }
 
   stages {
