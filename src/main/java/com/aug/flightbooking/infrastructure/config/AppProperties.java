@@ -52,6 +52,7 @@ public class AppProperties {
             private String reservationEmittedTopic;
             private String flightseatConfirmedTopic;
             private String flightseatRejectedTopic;
+            private String ticketCreatedTopic;
         }
 
         @Data
@@ -60,6 +61,7 @@ public class AppProperties {
             private String reservationFlightEmittedGroupId;
             private String flightseatReservationConfirmedGroupId;
             private String flightseatReservationRejectedGroupId;
+            private String ticketReservationCreatedGroupId;
         }
     }
 

@@ -33,7 +33,7 @@ public class FlightDataInitializer {
         WebClient client = webClientBuilder.baseUrl(baseUrl).build();
         Instant now = Instant.now().truncatedTo(ChronoUnit.MINUTES);
 
-        return Flux.range(1, 5)
+        return Flux.range(1, 3)
             .map(i -> {
                 FlightCreateRequest flight = new FlightCreateRequest();
                 flight.setAirlineName("Airline " + i);

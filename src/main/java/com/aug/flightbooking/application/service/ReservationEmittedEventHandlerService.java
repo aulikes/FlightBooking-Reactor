@@ -1,7 +1,9 @@
 package com.aug.flightbooking.application.service;
 
 import com.aug.flightbooking.application.events.ReservationEmittedEvent;
+import com.aug.flightbooking.application.events.TicketCreatedEvent;
 import com.aug.flightbooking.application.ports.in.ReservationEmittedEventHandler;
+import com.aug.flightbooking.application.ports.out.TicketCreatedEventPublisher;
 import com.aug.flightbooking.application.ports.out.TicketRepository;
 import com.aug.flightbooking.domain.models.ticket.Ticket;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +21,28 @@ import reactor.core.publisher.Mono;
 public class ReservationEmittedEventHandlerService implements ReservationEmittedEventHandler {
 
     private final TicketRepository ticketRepository;
+    private final TicketCreatedEventPublisher publisher;
 
     @Override
     public Mono<Ticket> handle(ReservationEmittedEvent event) {
-
         return ticketRepository.findByReservationId(event.reservationId())
             .switchIfEmpty(
-                // Si no existe, lo creamos
-                ticketRepository.save(Ticket.create(event.reservationId()))
+                Mono.defer(() -> {
+                    Ticket ticket = Ticket.create(event.reservationId());
+                    return ticketRepository.save(ticket)
+                        .flatMap(saved -> publisher
+                            .publish(new TicketCreatedEvent(saved.getReservationId(), "OK"))
+                            .thenReturn(saved));
+                })
             )
             .onErrorResume(ex -> {
-                // Manejo de errores con logging diferenciado
                 if (ex instanceof IllegalArgumentException) {
-                    log.warn("Negocio: {}", ex.getMessage());
+                    log.warn("[handle][reservationId={}] Negocio: {}", event.reservationId(), ex.getMessage());
                 } else {
-                    log.error("Técnico: ", ex);
+                    log.error("[handle][reservationId={}] Técnico: ", event.reservationId(), ex);
                 }
-                return Mono.empty(); // O podrías retornar Mono.error(ex) si quieres propagarlo
+                return Mono.empty(); // O Mono.error(ex) si quieres que el error burbujee
             });
     }
+
 }

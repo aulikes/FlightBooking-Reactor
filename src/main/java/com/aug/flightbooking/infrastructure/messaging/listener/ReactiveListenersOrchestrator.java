@@ -14,6 +14,7 @@ public class ReactiveListenersOrchestrator {
     private final FlightReservEmittedEventListenerKafka flightEmittedListener;
     private final ReservFlightseatConfirmedEventListenerKafka confirmedListener;
     private final ReservFlightseatRejectedEventListenerKafka rejectedListener;
+    private final ReservTicketCreatedEventListenerKafka ticketCreatedListener;
 
     /**
      * Método que activa todos los listeners compartidos.
@@ -25,7 +26,8 @@ public class ReactiveListenersOrchestrator {
             flightCreatedListener.onMessage(),
             flightEmittedListener.onMessage(),
             confirmedListener.onMessage(),
-            rejectedListener.onMessage()
+            rejectedListener.onMessage(),
+            ticketCreatedListener.onMessage()
         )
         .doOnSubscribe(sub -> log.info("ReactiveListenersOrchestrator: iniciando listeners..."))
         .doOnSuccess(v -> log.info("Todos los listeners han sido activados"))

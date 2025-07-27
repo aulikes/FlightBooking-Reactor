@@ -35,7 +35,7 @@ public class ReservationDataInitializer {
         String baseUrl = "http://localhost:" + port;
         WebClient client = webClientBuilder.baseUrl(baseUrl).build();
 
-        return Flux.range(1, 10)
+        return Flux.range(1, 5)
             .flatMap(i -> {
                 int randomIndex = ThreadLocalRandom.current().nextInt(vuelosCreados.size());
                 FlightCreateResponse vuelo = vuelosCreados.get(randomIndex);

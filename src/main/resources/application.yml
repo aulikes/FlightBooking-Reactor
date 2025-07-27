@@ -110,9 +110,11 @@ app:
       reservation-emitted-topic: reservation.emitted
       flightseat-confirmed-topic: flightseat.confirmed
       flightseat-rejected-topic: flightseat.rejected
+      ticket-created-topic: ticket.created
 
     consumer:
       reservation-flight-created-groupId: reservation-flight-created
       reservation-flight-emitted-groupId: reservation-flight-emitted
       flightseat-reservation-confirmed-groupId: flight-reservation-confirmed
       flightseat-reservation-rejected-groupId: flight-reservation-rejected
+      ticket-reservation-created-groupId: ticket-reservation-created

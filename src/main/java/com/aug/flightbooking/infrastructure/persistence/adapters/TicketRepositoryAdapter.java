@@ -3,7 +3,7 @@ package com.aug.flightbooking.infrastructure.persistence.adapters;
 import com.aug.flightbooking.application.ports.out.TicketRepository;
 import com.aug.flightbooking.domain.models.ticket.Ticket;
 import com.aug.flightbooking.infrastructure.persistence.entities.TicketEntity;
-import com.aug.flightbooking.infrastructure.persistence.mappers.TicketPersistenceMapper;
+import com.aug.flightbooking.infrastructure.persistence.mappers.TicketMapper;
 import com.aug.flightbooking.infrastructure.persistence.repositories.R2dbcTicketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,20 +20,20 @@ public class TicketRepositoryAdapter implements TicketRepository {
 
     @Override
     public Mono<Ticket> save(Ticket ticket) {
-        TicketEntity entity = TicketPersistenceMapper.toEntity(ticket);
+        TicketEntity entity = TicketMapper.toEntity(ticket);
         return r2dbcRepository.save(entity)
-            .map(TicketPersistenceMapper::toDomain);
+            .map(TicketMapper::toDomain);
     }
 
     @Override
     public Mono<Ticket> findById (Long id) {
         return r2dbcRepository.findById(id)
-                .map(TicketPersistenceMapper::toDomain);
+                .map(TicketMapper::toDomain);
     }
 
     @Override
     public Mono<Ticket> findByReservationId (Long id) {
         return r2dbcRepository.findByReservationId(id)
-                .map(TicketPersistenceMapper::toDomain);
+                .map(TicketMapper::toDomain);
     }
 }
