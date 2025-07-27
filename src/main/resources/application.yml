@@ -14,8 +14,8 @@ spring:
 
   # Conexión de la aplicación con PostgreSQL
   r2dbc:
-    urlJdbc: jdbc:postgresql://localhost:5433/flightbooking
-    url: r2dbc:postgresql://localhost:5433/flightbooking
+    urlJdbc: jdbc:postgresql://postgres:5444/flightbooking
+    url: r2dbc:postgresql://postgres:5444/flightbooking
     username: devuser
     password: devpass
 
