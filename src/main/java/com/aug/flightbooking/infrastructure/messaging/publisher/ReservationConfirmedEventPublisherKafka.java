@@ -29,6 +29,7 @@ public class ReservationConfirmedEventPublisherKafka implements ReservationConfi
     @Override
     public Mono<Void> publish(ReservationConfirmedEvent event) {
         String key = event.getTraceId();
+        Long reservationId = event.reservationId();
         String topic = properties.getReservationConfirmedTopic();
 
         return encoder.encode(event)
@@ -40,7 +41,7 @@ public class ReservationConfirmedEventPublisherKafka implements ReservationConfi
                     kafkaSender.send(Mono.just(senderRecord)).next()
             )
             .doOnNext(result ->
-                    log.info("Evento ReservationConfirmed publicado correctamente: {}", key)
+                    log.info("Evento ReservationConfirmed publicado correctamente, reservationId: {}", reservationId)
             )
             .doOnError(error ->
                     log.error("Error al publicar ReservationConfirmed: {}", error.getMessage(), error)

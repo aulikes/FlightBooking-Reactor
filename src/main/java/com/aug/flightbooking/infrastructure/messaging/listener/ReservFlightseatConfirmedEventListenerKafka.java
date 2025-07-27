@@ -27,9 +27,19 @@ public class ReservFlightseatConfirmedEventListenerKafka {
                 properties.getKafka().getConsumer().getFlightseatReservationConfirmedGroupId()
             )
             .receive()
-            .flatMap(record -> decoder.decode(record.value(), FlightseatConfirmedEvent.class))
-            .flatMap(handler::handle)
-            .doOnNext(event -> log.info("ReservFlightseatConfirmedEventListenerKafka procesado..."))
+            .flatMap(record ->
+                decoder.decode(record.value(), FlightseatConfirmedEvent.class)
+                    .flatMap(event ->
+                        handler.handle(event)
+                            .doOnSuccess(ok ->
+                                log.info("ReservFlightseatConfirmedEventListenerKafka procesado correctamente. reservationId={}", event.reservationId())
+                            )
+                    )
+                    // Solo después de procesar con éxito, confirmamos el offset al broker
+                    .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
+            )
+            // Se ejecuta una vez cuando comienza la suscripción al topic
+            .doOnSubscribe(sub -> log.info("ReservFlightseatConfirmedEventListenerKafka activo"))
             .doOnError(e -> log.error("Error procesando ReservFlightseatConfirmedEventListenerKafka", e))
             .then();
     }

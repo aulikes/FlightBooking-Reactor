@@ -1,5 +1,6 @@
 package com.aug.flightbooking.infrastructure.messaging.listener;
 
+import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
 import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.ports.in.FlightseatRejectedEventHandler;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
@@ -27,9 +28,19 @@ public class ReservFlightseatRejectedEventListenerKafka {
                     properties.getKafka().getConsumer().getFlightseatReservationRejectedGroupId()
             )
             .receive()
-            .flatMap(record -> decoder.decode(record.value(), FlightseatRejectedEvent.class))
-            .flatMap(handler::handle)
-            .doOnNext(event -> log.info("ReservFlightseatRejectedEventListenerKafka procesado"))
+            .flatMap(record ->
+                decoder.decode(record.value(), FlightseatRejectedEvent.class)
+                    .flatMap(event ->
+                        handler.handle(event)
+                            .doOnSuccess(__ ->
+                                log.info("ReservFlightseatRejectedEventListenerKafka procesado correctamente. reservationId={}", event.reservationId())
+                            )
+                    )
+                    // Solo después de procesar con éxito, confirmamos el offset al broker
+                    .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
+            )
+            // Se ejecuta una vez cuando comienza la suscripción al topic
+            .doOnSubscribe(sub -> log.info("ReservFlightseatRejectedEventListenerKafka activo"))
             .doOnError(e -> log.error("Error procesando ReservFlightseatRejectedEventListenerKafka", e))
             .then();
     }
