@@ -16,4 +16,6 @@ public interface TicketRepository {
   Mono<Ticket> save(Ticket ticket);
 
   Mono<Ticket> findById(Long id);
+
+  Mono<Ticket> findByReservationId(Long id);
 }

@@ -28,6 +28,12 @@ public class TicketRepositoryAdapter implements TicketRepository {
     @Override
     public Mono<Ticket> findById (Long id) {
         return r2dbcRepository.findById(id)
-            .map(TicketPersistenceMapper::toDomain);
+                .map(TicketPersistenceMapper::toDomain);
+    }
+
+    @Override
+    public Mono<Ticket> findByReservationId (Long id) {
+        return r2dbcRepository.findByReservationId(id)
+                .map(TicketPersistenceMapper::toDomain);
     }
 }

@@ -11,12 +11,14 @@ import reactor.core.publisher.Mono;
 public class ReactiveListenersOrchestrator {
 
     private final FlightReservCreatedEventListenerKafka flightCreatedListener;
+    private final FlightReservEmittedEventListenerKafka flightEmittedListener;
     private final ReservFlightseatConfirmedEventListenerKafka confirmedListener;
     private final ReservFlightseatRejectedEventListenerKafka rejectedListener;
 
     public Mono<Void> startAllListeners() {
         return Mono.when(
             flightCreatedListener.onMessage(),
+            flightEmittedListener.onMessage(),
             confirmedListener.onMessage(),
             rejectedListener.onMessage()
         ).doOnSuccess(v -> log.info("Todos los listeners han sido activados"));
