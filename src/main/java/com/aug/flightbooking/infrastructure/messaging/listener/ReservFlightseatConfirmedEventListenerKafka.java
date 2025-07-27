@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.kafka.receiver.KafkaReceiver;
 
 @Component
 @Slf4j
@@ -20,13 +21,14 @@ public class ReservFlightseatConfirmedEventListenerKafka {
     private final ReactiveJsonDecoder decoder;
 
     public Mono<Void> onMessage() {
-        return KafkaReceiverFactory
-            .createReceiver(
-                properties.getKafka().getBootstrapServers(),
-                properties.getKafka().getProducer().getFlightseatConfirmedTopic(),
-                properties.getKafka().getConsumer().getFlightseatReservationConfirmedGroupId()
-            )
-            .receive()
+        // Creamos el receptor Kafka usando configuración centralizada
+        KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
+            properties.getKafka().getBootstrapServers(),
+            properties.getKafka().getProducer().getFlightseatConfirmedTopic(),
+            properties.getKafka().getConsumer().getFlightseatReservationConfirmedGroupId()
+        );
+
+        return receiver.receive()
             .flatMap(record ->
                 decoder.decode(record.value(), FlightseatConfirmedEvent.class)
                     .flatMap(event ->

@@ -1,6 +1,5 @@
 package com.aug.flightbooking.infrastructure.messaging.listener;
 
-import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
 import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.ports.in.FlightseatRejectedEventHandler;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
@@ -10,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.kafka.receiver.KafkaReceiver;
 
 @Component
 @Slf4j
@@ -21,13 +21,14 @@ public class ReservFlightseatRejectedEventListenerKafka {
     private final ReactiveJsonDecoder decoder;
 
     public Mono<Void> onMessage() {
-        return KafkaReceiverFactory
-            .createReceiver(
-                    properties.getKafka().getBootstrapServers(),
-                    properties.getKafka().getProducer().getFlightseatRejectedTopic(),
-                    properties.getKafka().getConsumer().getFlightseatReservationRejectedGroupId()
-            )
-            .receive()
+        // Creamos el receptor Kafka usando configuración centralizada
+        KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
+            properties.getKafka().getBootstrapServers(),
+            properties.getKafka().getProducer().getFlightseatRejectedTopic(),
+            properties.getKafka().getConsumer().getFlightseatReservationRejectedGroupId()
+        );
+
+        return receiver.receive()
             .flatMap(record ->
                 decoder.decode(record.value(), FlightseatRejectedEvent.class)
                     .flatMap(event ->
