@@ -1,7 +1,5 @@
 package com.aug.flightbooking.application.service;
 
-import com.aug.flightbooking.application.events.FlightseatConfirmedEvent;
-import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.events.TicketCreatedEvent;
 import com.aug.flightbooking.application.ports.in.ReservationConfirmedEventHandler;
 import com.aug.flightbooking.application.ports.out.ReservationRepository;
@@ -10,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Procesa ReservationCreatedEvent desde Reservation.
@@ -27,14 +23,6 @@ public class ReservationConfirmedEventHandlerService implements ReservationConfi
 
     @Override
     public Mono<Void> handle(TicketCreatedEvent event) {
-        // Generar número entre 0 y 99
-        int random = ThreadLocalRandom.current().nextInt(100);
-
-        // Si está en el % inicial, no hace nada para establecer timeout con REDIS
-        if (random < 30) {
-            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
-            return Mono.empty();
-        }
 
         return reservationRepository.findById(event.reservationId())
             .switchIfEmpty(Mono.defer(() -> {
