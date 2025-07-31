@@ -1,0 +1,24 @@
+# Servicio para exponer Kafka en el clúster
+# Producción:
+# 1. Usar type: ClusterIP o LoadBalancer, según el entorno cloud. Y eliminar la línea nodePort: 31094.
+# 2. Considerar habilitar TLS/seguridad en listeners para entornos productivos.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+spec:
+  selector:
+    app: kafka                           # Debe coincidir con el label del Deployment
+  type: NodePort                         # Para exponer el servicio fuera del clúster (local)
+  ports:
+    - name: plaintext                    # Canal para clientes externos (host)
+      protocol: TCP
+      port: 9094                         # Puerto expuesto dentro del clúster
+      targetPort: 9094                   # Puerto del contenedor
+      nodePort: 31094                    # Puerto expuesto en el host (localhost:31094)
+
+    - name: internal                     # Canal interno entre pods/servicios
+      protocol: TCP
+      port: 9093                         # Puerto interno del clúster
+      targetPort: 9093                   # Puerto del contenedor

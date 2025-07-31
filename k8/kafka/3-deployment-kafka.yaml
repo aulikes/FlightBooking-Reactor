@@ -1,0 +1,116 @@
+# Deployment para Kafka (entorno local)
+# Producción:
+# - Añadir probes para supervisión de salud.
+# - Definir recursos.
+# - Considerar afinidad/tolerancia.
+# - Usar StorageClass dinámico.
+# - Imagen con digest SHA256 para seguridad.
+# - Escalar réplicas solo si hay alta disponibilidad en Zookeeper.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-deployment
+spec:
+  replicas: 1  # En producción, usar más réplicas solo si Zookeeper está en clúster (3+ nodos)
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /var/lib/kafka/data"]
+          volumeMounts:
+            - name: kafka-storage
+              mountPath: /var/lib/kafka/data
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.4.0  # Imagen oficial de Kafka
+          ports:
+            - containerPort: 9094  # Puerto externo (PLAINTEXT)
+            - containerPort: 9093  # Puerto interno (DOCKER)
+          env:
+            - name: KAFKA_BROKER_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_BROKER_ID
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_ZOOKEEPER_CONNECT
+            - name: KAFKA_LISTENERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_LISTENERS
+            - name: KAFKA_ADVERTISED_LISTENERS
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_ADVERTISED_LISTENERS
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-config
+                  key: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+          volumeMounts:
+            - name: kafka-storage
+              mountPath: /var/lib/kafka/data
+          # En producción se recomienda definir los siguientes probes:
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 9094
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 30
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: 9094
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+
+          # En producción se deben establecer límites de recursos:
+          # resources:
+          #   requests:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "500m"
+
+      # En producción se recomienda añadir afinidad y tolerancias:
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #             - key: node-role.kubernetes.io/worker
+      #               operator: Exists
+      # tolerations:
+      #   - key: "dedicated"
+      #     operator: "Equal"
+      #     value: "kafka"
+      #     effect: "NoSchedule"
+
+      volumes:
+        - name: kafka-storage
+          persistentVolumeClaim:
+            claimName: kafka-pvc  # En producción, este PVC debe usar StorageClass gestionado dinámicamente
