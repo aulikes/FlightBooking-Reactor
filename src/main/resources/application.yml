@@ -16,8 +16,8 @@ spring:
   r2dbc:
     urlJdbc: jdbc:postgresql://localhost:5444/flightbooking
     url: r2dbc:postgresql://localhost:5444/flightbooking
-    username: devuser
-    password: devpass
+    username: postgres
+    password: postgres
 
   # Configuración de Liquidbase
   liquibase:

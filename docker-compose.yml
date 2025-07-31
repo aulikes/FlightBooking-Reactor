@@ -67,8 +67,8 @@ services:
     ports:
       - "5444:5432"                                # Puerto por defecto de PostgreSQL
     environment:
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devpass
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: flightbooking
     volumes:
       - postgres_data:/var/lib/postgresql/data     # Persistencia de datos
