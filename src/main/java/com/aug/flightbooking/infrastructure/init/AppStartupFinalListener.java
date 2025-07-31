@@ -69,20 +69,24 @@ public class AppStartupFinalListener {
                 log.info("Inicio de creación de Reservas");
                 return reservationDataInitializer.init(flightResponses); // Mono<List<ReservationResponse>>
             })
-            .then(Mono.defer(() -> {
+            .then(Mono.fromRunnable(() -> {
                 log.info("Activando listeners reactivamente...");
-                return reactiveListenersOrchestrator.startAllListeners();
+                reactiveListenersOrchestrator.startAllListeners(); // ejecución paralela
             }))
-            .doOnSuccess(v -> {
+            .then(Mono.fromRunnable(() -> {
                 log.info("Inicialización completa");
 
                 // Se lanza el Scheduler en un flujo paralelo.
                 // No se encadena al flujo principal (no se espera su resultado).
                 // Indica que se ejecute en un hilo de tipo "elastic" (apto para tareas largas, como el scheduler).
-//                timeoutScheduler.startSchedulerReservations()
-//                        .subscribeOn(Schedulers.boundedElastic())
-//                        .subscribe();
-            })
+                timeoutScheduler.startSchedulerReservations()
+                    .subscribeOn(Schedulers.boundedElastic()) // Scheduler explícito
+                    .doOnSubscribe(s -> log.info("StartSchedulerReservations suscrito"))
+                    .subscribe(
+                            null,
+                            error -> log.error("Error inesperado en el Scheduler", error)
+                    );
+            }))
             .doOnError(ex -> {
                 log.error("Error durante inicio de la aplicación: {}", ex.getMessage(), ex);
                 System.exit(1);

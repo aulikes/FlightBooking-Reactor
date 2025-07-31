@@ -27,9 +27,10 @@ public class ReservationTimeoutScheduler {
         this.failReservationUseCase = failReservationUseCase;
     }
 
-    public Mono<Void> startSchedulerReservations() {
-        log.info("Iniciando Scheduler ReservationTimeoutScheduler");
-        return Flux.interval(Duration.ZERO, Duration.ofSeconds(properties.getPeriodFluxSeconds()))
+    public Flux<Void> startSchedulerReservations() {
+        log.info("Iniciando Scheduler ReservationTimeoutScheduler, every {} seconds", properties.getPeriodFluxSeconds());
+        return Flux.interval(Duration.ZERO, Duration.ofSeconds(30L))
+            .doOnSubscribe(s -> log.info("Flux.interval suscrito"))
             // Loguea cada tick recibido
             .doOnNext(tick -> log.debug("Tick recibido: {}", tick))
 
@@ -46,8 +47,8 @@ public class ReservationTimeoutScheduler {
                     })
                     .then()
             )
+            .doOnError(e -> log.error("Error detectado antes de continuar: {}", e.getMessage(), e))
             .onErrorContinue((ex, obj) ->
-                    log.error("Error en timeout de reserva: {}", ex.getMessage()))
-            .then(); // convertimos Flux a Mono<Void>
+                    log.error("Error en timeout de reserva: {}", ex.getMessage()));
     }
 }

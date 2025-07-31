@@ -3,6 +3,7 @@ package com.aug.flightbooking.infrastructure.messaging.listener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -22,16 +23,19 @@ public class ReactiveListenersOrchestrator {
      */
     public Mono<Void> startAllListeners() {
         log.info("Activando todos los listeners reactivos...");
-        return Mono.when(
-            flightCreatedListener.onMessage(),
-            flightEmittedListener.onMessage(),
-            confirmedListener.onMessage(),
-            rejectedListener.onMessage(),
-            ticketCreatedListener.onMessage()
+
+        Flux.merge(
+                flightCreatedListener.onMessage(),
+                flightEmittedListener.onMessage(),
+                confirmedListener.onMessage(),
+                rejectedListener.onMessage(),
+                ticketCreatedListener.onMessage()
         )
         .doOnSubscribe(sub -> log.info("ReactiveListenersOrchestrator: iniciando listeners..."))
-        .doOnSuccess(v -> log.info("Todos los listeners han sido activados"))
-        .cache(); // <- evita múltiples suscripciones y re-ejecuciones
+        .doOnError(e -> log.error("Error en ReactiveListenersOrchestrator", e))
+        .subscribe(); //Se suscribe una sola vez, aquí
+
+        return Mono.empty(); //Solo devuelve vacío, sin activar de nuevo
     }
 }
 

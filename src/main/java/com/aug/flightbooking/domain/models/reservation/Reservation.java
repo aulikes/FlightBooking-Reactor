@@ -81,7 +81,8 @@ public class Reservation {
      */
     private void changeStatus(ReservationStatus newStatus) {
         if (!ReservationStateMachine.canTransition(this.status, newStatus)) {
-            throw new ReservationChangeStatusException("Transición no permitida de " + this.status + " a " + newStatus);
+            throw new ReservationChangeStatusException(
+                    "ReservationId: " + this.id + ". Transición no permitida de " + this.status + " a " + newStatus);
         }
         this.status = newStatus;
     }

@@ -2,7 +2,6 @@ package com.aug.flightbooking.infrastructure.persistence.adapters;
 
 import com.aug.flightbooking.application.ports.out.ReservationRepository;
 import com.aug.flightbooking.domain.models.reservation.Reservation;
-import com.aug.flightbooking.domain.models.reservation.ReservationStatus;
 import com.aug.flightbooking.infrastructure.persistence.entities.ReservationEntity;
 import com.aug.flightbooking.infrastructure.persistence.mappers.ReservationMapper;
 import com.aug.flightbooking.infrastructure.persistence.repositories.R2dbcReservationRepository;
@@ -12,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -33,8 +33,8 @@ public class ReservationRepositoryAdapter implements ReservationRepository {
     }
 
     @Override
-    public Flux<Reservation> findReservationsCreatedBefore(Instant threshold) {
-        return repository.findByStatusAndCreatedAtBefore(ReservationStatus.CREATED.name(), threshold)
+    public Flux<Reservation> findReservationsBefore(Instant threshold, List<String> statuses) {
+        return repository.findByStatusesAtBefore(statuses, threshold)
                 .map(ReservationMapper::toDomain);
     }
 }

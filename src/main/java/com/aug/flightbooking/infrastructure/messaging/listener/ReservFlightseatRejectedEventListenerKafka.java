@@ -8,6 +8,7 @@ import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJson
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
 
@@ -20,7 +21,7 @@ public class ReservFlightseatRejectedEventListenerKafka {
     private final FlightseatRejectedEventHandler handler;
     private final ReactiveJsonDecoder decoder;
 
-    public Mono<Void> onMessage() {
+    public Flux<Void> onMessage() {
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
                 properties.getKafka().getBootstrapServers(),
                 properties.getKafka().getProducer().getFlightseatRejectedTopic(),
@@ -41,14 +42,12 @@ public class ReservFlightseatRejectedEventListenerKafka {
                         log.error("[flightseat.rejected] Error procesando evento", ex);
                         return Mono.empty();
                     })
-                    .then(Mono.defer(() -> {
+                    .then(Mono.<Void>fromRunnable(() -> {
                         log.debug("[flightseat.rejected] ACK offset={} partition={}", record.offset(), record.partition());
                         record.receiverOffset().acknowledge();
-                        return Mono.empty();
                     }))
             )
             .doOnSubscribe(sub -> log.info("ReservFlightseatRejectedEventListenerKafka activo"))
-            .doOnError(e -> log.error("[flightseat.rejected] Error en stream principal", e))
-            .then();
+            .doOnError(e -> log.error("[flightseat.rejected] Error en stream principal", e));
     }
 }

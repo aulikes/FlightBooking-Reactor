@@ -8,6 +8,7 @@ import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJson
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
 
@@ -20,7 +21,7 @@ public class ReservFlightseatConfirmedEventListenerKafka {
     private final FlightseatConfirmedEventHandler handler;
     private final ReactiveJsonDecoder decoder;
 
-    public Mono<Void> onMessage() {
+    public Flux<Void> onMessage() {
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
                 properties.getKafka().getBootstrapServers(),
                 properties.getKafka().getProducer().getFlightseatConfirmedTopic(),
@@ -40,15 +41,13 @@ public class ReservFlightseatConfirmedEventListenerKafka {
                                     log.error("[Listener Confirmed] Error procesando evento", ex);
                                     return Mono.empty(); // evitar bloqueo
                                 })
-                                .then(Mono.defer(() -> {
+                                .then(Mono.<Void>fromRunnable(() -> {
                                     log.debug("[Listener Confirmed] ACK offset={} partition={}", record.offset(), record.partition());
-                                    record.receiverOffset().acknowledge(); // ✅ ACK manual
-                                    return Mono.empty();
+                                    record.receiverOffset().acknowledge();
                                 }))
                 )
                 .doOnSubscribe(sub -> log.info("[Listener Confirmed] Suscrito al tópico"))
-                .doOnError(e -> log.error("[Listener Confirmed] Error en el stream general", e))
-                .then();
+                .doOnError(e -> log.error("[Listener Confirmed] Error en el stream general", e));
     }
 }
 

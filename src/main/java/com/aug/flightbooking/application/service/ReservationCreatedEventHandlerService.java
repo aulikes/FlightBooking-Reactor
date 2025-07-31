@@ -30,13 +30,13 @@ public class ReservationCreatedEventHandlerService implements ReservationCreated
     @Override
     public Mono<Void> handle(ReservationCreatedEvent event) {
         // Generar número entre 0 y 99
-//        int random = ThreadLocalRandom.current().nextInt(100);
-//
-//        // Si está en el 30% inicial, no hace nada para establecer timeout con REDIS
-//        if (random < 30) {
-//            log.info("Simulación: NO se publica ningún evento para reserva {}", event.reservationId());
-//            return Mono.empty();
-//        }
+        int random = ThreadLocalRandom.current().nextInt(100);
+
+        // Si está en el 30% inicial, no hace nada para establecer timeout con REDIS
+        if (random < 30) {
+            log.info("Simulación ReservationCreatedEventHandlerService: NO se publica ningún evento para reserva {}", event.reservationId());
+            return Mono.empty();
+        }
 
         return flightRepository.findById(event.flightId())
             .switchIfEmpty(Mono.defer(() -> {

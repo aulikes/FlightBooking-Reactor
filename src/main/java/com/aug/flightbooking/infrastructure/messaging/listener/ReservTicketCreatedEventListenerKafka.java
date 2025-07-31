@@ -8,6 +8,7 @@ import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJson
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
 
@@ -20,7 +21,7 @@ public class ReservTicketCreatedEventListenerKafka {
     private final ReservationConfirmedEventHandler handler;
     private final ReactiveJsonDecoder decoder;
 
-    public Mono<Void> onMessage() {
+    public Flux<Void> onMessage() {
         // Creamos el receptor Kafka usando configuración centralizada
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
                 properties.getKafka().getBootstrapServers(),
@@ -41,13 +42,11 @@ public class ReservTicketCreatedEventListenerKafka {
                             )
                     )
                     // Solo después de procesar con éxito, confirmamos el offset al broker
-                    .then(Mono.fromRunnable(record.receiverOffset()::acknowledge))
+                    .then(Mono.<Void>fromRunnable(record.receiverOffset()::acknowledge))
             )
             // Se ejecuta una vez cuando comienza la suscripción al topic
             .doOnSubscribe(sub -> log.info("ReservTicketCreatedEventListenerKafka activo"))
             // Manejo de errores a nivel de flujo completo
-            .doOnError(e -> log.error("Error procesando evento en ReservTicketCreatedEventListenerKafka", e))
-            // Convertimos a Mono<Void> para cumplir contrato del orquestador
-            .then();
+            .doOnError(e -> log.error("Error procesando evento en ReservTicketCreatedEventListenerKafka", e));
     }
 }

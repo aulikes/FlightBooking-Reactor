@@ -57,7 +57,14 @@ public class RedisReservationCache implements ReservationCache {
     @Override
     public Mono<String> get(Long reservationId) {
         String key = redisProperties.getRedisReservation().getKeyPrefixReservationCache() + reservationId;
-        return redisTemplate.opsForValue().get(key);
+        log.debug("Key Redis {}", key);
+        return redisTemplate.opsForValue().get(key)
+            .doOnSubscribe(__ -> log.debug("Buscando en Redis con clave: {}", key))
+            .doOnNext(value -> log.debug("Valor obtenido de Redis para clave {}: {}", key, value))
+            .switchIfEmpty(Mono.fromRunnable(() ->
+                    log.warn("Valor NO encontrado en Redis para clave: {}", key)
+            ))
+            .doOnTerminate(() -> log.debug("Terminó consulta a Redis para clave: {}", key));
     }
 
 }

@@ -8,6 +8,7 @@ import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJson
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.kafka.receiver.KafkaReceiver;
 
@@ -20,7 +21,7 @@ public class FlightReservCreatedEventListenerKafka {
     private final ReservationCreatedEventHandler handler;
     private final ReactiveJsonDecoder decoder;
 
-    public Mono<Void> onMessage() {
+    public Flux<Void> onMessage() {
         KafkaReceiver<String, byte[]> receiver = KafkaReceiverFactory.createReceiver(
                 properties.getKafka().getBootstrapServers(),
                 properties.getKafka().getProducer().getReservationCreatedTopic(),
@@ -28,24 +29,22 @@ public class FlightReservCreatedEventListenerKafka {
         );
 
         return receiver.receive()
-                .concatMap(record ->
-                        decoder.decode(record.value(), ReservationCreatedEvent.class)
-                                .flatMap(event ->
-                                        handler.handle(event)
-                                                .doOnSuccess(__ -> log.info("[reservation.created] Procesado OK. reservationId={}", event.reservationId()))
-                                )
-                                .onErrorResume(ex -> {
-                                    log.error("[reservation.created] Error procesando evento", ex);
-                                    return Mono.empty(); // no se propaga el error
-                                })
-                                .then(Mono.defer(() -> {
-                                    log.debug("[reservation.created] ACK offset={} partition={}", record.offset(), record.partition());
-                                    record.receiverOffset().acknowledge();
-                                    return Mono.empty();
-                                }))
-                )
-                .doOnSubscribe(sub -> log.info("FlightReservCreatedEventListenerKafka activo"))
-                .doOnError(e -> log.error("[reservation.created] Error en stream principal", e))
-                .then();
+            .concatMap(record ->
+                    decoder.decode(record.value(), ReservationCreatedEvent.class)
+                            .flatMap(event ->
+                                    handler.handle(event)
+                                            .doOnSuccess(__ -> log.info("[reservation.created] Procesado OK. reservationId={}", event.reservationId()))
+                            )
+                            .onErrorResume(ex -> {
+                                log.error("[reservation.created] Error procesando evento", ex);
+                                return Mono.empty(); // no se propaga el error
+                            })
+                            .then(Mono.<Void>fromRunnable(() -> {
+                                log.debug("[reservation.created] ACK offset={} partition={}", record.offset(), record.partition());
+                                record.receiverOffset().acknowledge();
+                            }))
+            )
+            .doOnSubscribe(sub -> log.info("FlightReservCreatedEventListenerKafka activo"))
+            .doOnError(e -> log.error("[reservation.created] Error en stream principal", e));
     }
 }
