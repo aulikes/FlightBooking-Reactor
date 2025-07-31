@@ -1,0 +1,17 @@
+# Servicio para exponer PostgreSQL al exterior del clúster (desde tu host)
+# Útil en entornos locales (como Minikube) para conectarte desde pgAdmin, DBeaver, etc.
+# En producción, se debe usar type: ClusterIP o LoadBalancer y eliminar la línea nodePort: 31432.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres                         # Conecta con los pods que tienen esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 5432                          # Puerto interno del clúster
+      targetPort: 5432                    # Puerto del contenedor
+      nodePort: 31432                     # Puerto en el host (fuera del clúster)
+  type: NodePort                          # Permite acceso desde el host (localhost:31432)
+                                          # En producción, type debe ser ClusterIP o LoadBalancer

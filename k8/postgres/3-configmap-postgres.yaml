@@ -1,0 +1,12 @@
+# ConfigMap con configuraciones no sensibles para PostgreSQL
+# Producción:
+# 1. Sí hay más configuraciones no sensibles (nombre de esquema, puerto, flags), incluirlas aquí.
+# 2. Evitar colocar aquí credenciales: para eso está el Secret.
+# 3. Se puede parametrizar este archivo con Helm o Kustomize si tienes múltiples entornos.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config                 # Nombre del ConfigMap
+data:
+  DB_NAME: task_manager_db              # Nombre de la base de datos
+  DB_PORT: "5432"                       # Puerto de conexión a PostgreSQL (valor por defecto)

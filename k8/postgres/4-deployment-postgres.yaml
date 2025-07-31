@@ -1,0 +1,55 @@
+# Deployment que lanza un pod con el contenedor de PostgreSQL
+# En producción:
+# 1. Agregar tolerancias, nodeSelector o affinity si hay nodos dedicados para BDs.
+# 2. Configurar recursos (requests/limits) adecuados.
+# 3. Usar storage dinámico (PVC con storageClassName).
+# 4. Agregar probes si se requiere alta disponibilidad o readiness control.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1                               # Una sola instancia de PostgreSQL
+                                            # En producción usar StatefulSet si se requiere persistencia garantizada
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15                # Imagen oficial de PostgreSQL
+          ports:
+            - containerPort: 5432           # Puerto por defecto de PostgreSQL
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: DB_NAME
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: DB_PORT
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data  # Ruta donde PostgreSQL guarda sus datos
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
