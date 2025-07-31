@@ -5,7 +5,7 @@ pipeline {
     // Variables necesarias para Sonar y Gradle
     DOCKER_IMAGE = 'flightbooking-api'
     DOCKER_PORT = '8095'
-    SPRING_PROFILE = 'dev'
+    SPRING_PROFILE = 'docker'
     DOCKER_NETWORK = 'flightbooking-net'
   }
 
