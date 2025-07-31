@@ -1,0 +1,50 @@
+# Deployment para lanzar el contenedor de Zookeeper
+# Producción:
+# 1. Se recomienda añadir tolerancias, probes (liveness y readiness), recursos (limits/requests).
+# 2. El `hostPath` del PV debe ser reemplazado por un almacenamiento dinámico (con StorageClass).
+# 3. La imagen puede ser versionada explícitamente con digest para garantizar seguridad.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-deployment
+spec:
+  replicas: 1                                     # Número de pods (Zookeeper es stateful, suele ser 1 o en clústeres impares)
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /var/lib/zookeeper/data"]
+          volumeMounts:
+            - name: zookeeper-storage
+              mountPath: /var/lib/zookeeper/data
+      containers:
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:latest # Imagen oficial de Zookeeper
+          ports:
+            - containerPort: 2181                 # Puerto interno expuesto por Zookeeper
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOOKEEPER_CLIENT_PORT
+            - name: ZOOKEEPER_TICK_TIME
+              valueFrom:
+                configMapKeyRef:
+                  name: zookeeper-config
+                  key: ZOOKEEPER_TICK_TIME
+          volumeMounts:
+            - name: zookeeper-storage
+              mountPath: /var/lib/zookeeper/data  # Ruta de persistencia en el contenedor
+      volumes:
+        - name: zookeeper-storage
+          persistentVolumeClaim:
+            claimName: zookeeper-pvc              # PVC asociado al volumen persistente
