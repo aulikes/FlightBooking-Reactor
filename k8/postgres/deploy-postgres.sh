@@ -24,7 +24,7 @@ else
 fi
 
 # Aplicar todos los archivos YAML
-echo "Aplicando archivos YAML de PostgreSQL..."
+echo "Aplicando manifiestos YAML de PostgreSQL..."
 kubectl apply -f 0-pv-postgres.yaml
 kubectl apply -f 1-pvc-postgres.yaml -n "$NAMESPACE"
 kubectl apply -f 2-secret-postgres.yaml -n "$NAMESPACE"
