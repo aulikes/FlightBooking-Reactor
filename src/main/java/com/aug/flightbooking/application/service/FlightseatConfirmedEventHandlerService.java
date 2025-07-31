@@ -29,7 +29,7 @@ public class FlightseatConfirmedEventHandlerService implements FlightseatConfirm
      */
     @Override
     public Mono<Void> handle(FlightseatConfirmedEvent event) {
-        return reservationStatusUpdater.updateStatus(event.reservationId(), ReservationStatusAction.EMITTED)
+        return reservationStatusUpdater.updateStatus(event.reservationId(), "", ReservationStatusAction.EMITTED)
             .onErrorResume(error -> {
                 log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
                 return Mono.empty();

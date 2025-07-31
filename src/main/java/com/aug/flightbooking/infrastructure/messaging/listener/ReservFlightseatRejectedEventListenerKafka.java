@@ -28,27 +28,27 @@ public class ReservFlightseatRejectedEventListenerKafka {
         );
 
         return receiver.receive()
-                .concatMap(record ->
-                        decoder.decode(record.value(), FlightseatRejectedEvent.class)
-                                .flatMap(event ->
-                                        handler.handle(event)
-                                                .doOnSuccess(__ -> log.info(
-                                                        "[flightseat.rejected] Procesado OK reservationId={}",
-                                                        event.reservationId()
-                                                ))
-                                )
-                                .onErrorResume(ex -> {
-                                    log.error("[flightseat.rejected] Error procesando evento", ex);
-                                    return Mono.empty();
-                                })
-                                .then(Mono.defer(() -> {
-                                    log.info("[flightseat.rejected] ACK offset={} partition={}", record.offset(), record.partition());
-                                    record.receiverOffset().acknowledge();
-                                    return Mono.empty();
-                                }))
-                )
-                .doOnSubscribe(sub -> log.info("ReservFlightseatRejectedEventListenerKafka activo"))
-                .doOnError(e -> log.error("[flightseat.rejected] Error en stream principal", e))
-                .then();
+            .concatMap(record ->
+                decoder.decode(record.value(), FlightseatRejectedEvent.class)
+                    .flatMap(event ->
+                        handler.handle(event)
+                            .doOnSuccess(__ -> log.info(
+                                "[flightseat.rejected] Procesado OK reservationId={}",
+                                event.reservationId()
+                            ))
+                    )
+                    .onErrorResume(ex -> {
+                        log.error("[flightseat.rejected] Error procesando evento", ex);
+                        return Mono.empty();
+                    })
+                    .then(Mono.defer(() -> {
+                        log.debug("[flightseat.rejected] ACK offset={} partition={}", record.offset(), record.partition());
+                        record.receiverOffset().acknowledge();
+                        return Mono.empty();
+                    }))
+            )
+            .doOnSubscribe(sub -> log.info("ReservFlightseatRejectedEventListenerKafka activo"))
+            .doOnError(e -> log.error("[flightseat.rejected] Error en stream principal", e))
+            .then();
     }
 }

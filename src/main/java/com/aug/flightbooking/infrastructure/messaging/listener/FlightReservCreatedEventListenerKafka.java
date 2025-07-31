@@ -39,7 +39,7 @@ public class FlightReservCreatedEventListenerKafka {
                                     return Mono.empty(); // no se propaga el error
                                 })
                                 .then(Mono.defer(() -> {
-                                    log.info("[reservation.created] ACK offset={} partition={}", record.offset(), record.partition());
+                                    log.debug("[reservation.created] ACK offset={} partition={}", record.offset(), record.partition());
                                     record.receiverOffset().acknowledge();
                                     return Mono.empty();
                                 }))

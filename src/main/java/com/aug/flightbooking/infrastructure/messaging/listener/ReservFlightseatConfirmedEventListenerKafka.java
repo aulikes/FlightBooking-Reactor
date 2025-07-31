@@ -28,7 +28,7 @@ public class ReservFlightseatConfirmedEventListenerKafka {
         );
 
         return receiver.receive()
-                .concatMap(record -> // 🔄 uno a uno, con orden garantizado
+                .concatMap(record -> // uno a uno, con orden garantizado
                         decoder.decode(record.value(), FlightseatConfirmedEvent.class)
                                 .flatMap(event ->
                                         handler.handle(event)
@@ -41,7 +41,7 @@ public class ReservFlightseatConfirmedEventListenerKafka {
                                     return Mono.empty(); // evitar bloqueo
                                 })
                                 .then(Mono.defer(() -> {
-                                    log.info("[Listener Confirmed] ACK offset={} partition={}", record.offset(), record.partition());
+                                    log.debug("[Listener Confirmed] ACK offset={} partition={}", record.offset(), record.partition());
                                     record.receiverOffset().acknowledge(); // ✅ ACK manual
                                     return Mono.empty();
                                 }))

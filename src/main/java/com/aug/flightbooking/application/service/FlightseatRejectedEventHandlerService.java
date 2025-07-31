@@ -27,7 +27,7 @@ public class FlightseatRejectedEventHandlerService implements FlightseatRejected
   @Override
   public Mono<Void> handle(FlightseatRejectedEvent event) {
     return reservationStatusUpdater
-        .updateStatus(event.reservationId(), ReservationStatusAction.REJECTED)
+        .updateStatus(event.reservationId(), event.reason(), ReservationStatusAction.REJECTED)
         .onErrorResume(error -> {
           log.error("Error actualizando estado de reserva {}", event.reservationId(), error);
           return Mono.empty();

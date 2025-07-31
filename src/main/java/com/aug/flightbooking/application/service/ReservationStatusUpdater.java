@@ -22,10 +22,13 @@ public class ReservationStatusUpdater {
     /**
      * Busca la Resevación eb BD, Cambia el estado y la actualiza en base de datos
      */
-    public Mono<Void> updateStatus(Long reservationId, ReservationStatusAction action) {
+    public Mono<Void> updateStatus(Long reservationId, String msg, ReservationStatusAction action) {
         return reservationRepository.findById(reservationId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Reservation Not Found")))
-                .flatMap(reservation -> updateStatus(reservation, action));
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("Reservation Not Found")))
+            .flatMap(reservation -> {
+                reservation.setMessage(msg);
+                return updateStatus(reservation, action);
+            });
     }
 
     /**
