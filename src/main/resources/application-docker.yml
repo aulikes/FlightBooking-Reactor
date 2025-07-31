@@ -77,7 +77,7 @@ app:
 
     redis-reservation:
       host: redis
-      port: 6380
+      port: 6379
       database: 0   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
       reservation-timeout-seconds: 120  # en segundos, tiempo de vida de las reservas en Redis
       period-flux-seconds: 30 # periodo de ejecución del scheduler
@@ -85,7 +85,7 @@ app:
 
     redis-flight:
       host: redis
-      port: 6380
+      port: 6379
       database: 1   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
 
   kafka:
