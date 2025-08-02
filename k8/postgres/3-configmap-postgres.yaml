@@ -8,5 +8,5 @@ kind: ConfigMap
 metadata:
   name: postgres-config                 # Nombre del ConfigMap
 data:
-  DB_NAME: task_manager_db              # Nombre de la base de datos
+  DB_NAME: flightbooking              # Nombre de la base de datos
   DB_PORT: "5432"                       # Puerto de conexión a PostgreSQL (valor por defecto)
