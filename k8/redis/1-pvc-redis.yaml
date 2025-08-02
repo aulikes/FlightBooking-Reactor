@@ -1,0 +1,16 @@
+# PersistentVolumeClaim para Redis (entorno local)
+# En producción, **NO** se debe referenciar un PV fijo ni vaciar el storageClassName.
+# En su lugar, se usa provisión dinámica con una clase de almacenamiento definida por el proveedor,
+# como tal, se debe establecer un storageClassName apropiado (según el entorno: 'gp2', 'standard', 'longhorn', etc.)
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc                       # Nombre del PVC
+spec:
+  accessModes:
+    - ReadWriteOnce                     # Mismo modo que el PV
+  resources:
+    requests:
+      storage: 1Gi                      # Se solicita 1Gi, en local debe coincidir con el PV disponible
+  storageClassName: local-path          # Para uso con Minikube. Cambiar en producción.

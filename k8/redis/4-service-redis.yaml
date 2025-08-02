@@ -1,0 +1,17 @@
+# Servicio para exponer Redis al exterior del clúster (desde tu host)
+# Útil en entornos locales (como Minikube) para conectarte desde pgAdmin, DBeaver, etc.
+# En producción, se debe usar type: ClusterIP o LoadBalancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis                            # Conecta con los pods que tienen esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 6379                          # Puerto interno del clúster
+      targetPort: 6379                    # Puerto del contenedor
+      name: redis
+  type: ClusterIP                         # Solo accesible dentro del clúster
+  # En producción, type debe ser ClusterIP o LoadBalancer

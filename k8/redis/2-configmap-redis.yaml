@@ -1,0 +1,11 @@
+# ConfigMap con configuraciones no sensibles para Redis
+# Producción:
+# 1. Sí hay más configuraciones no sensibles (nombre de esquema, puerto, flags), incluirlas aquí.
+# 2. Evitar colocar aquí credenciales: para eso está el Secret.
+# 3. Se puede parametrizar este archivo con Helm o Kustomize si tienes múltiples entornos.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config                        # Nombre del ConfigMap
+data:
+  REDIS_PORT: "6379"                       # Puerto de conexión a Redis
