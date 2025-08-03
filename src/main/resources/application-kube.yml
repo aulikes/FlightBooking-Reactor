@@ -1,0 +1,103 @@
+spring:
+  # Conexión de la aplicación con PostgreSQL
+  r2dbc:
+    urlJdbc: ${SPRING_R2DBC_URLJDBC} # jdbc:postgresql://postgres-service:5432/flightbooking
+    url: ${SPRING_R2DBC_URL}         # r2dbc:postgresql://postgres-service:5432/flightbooking
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
+
+  # Configuración de Liquidbase
+  liquibase:
+    enabled: ${SPRING_LIQUIBASE_ENABLED}
+    change-log: classpath:liquibase/changelog/changelog-master.yaml
+
+  #Configuración de Redis para alto rendimiento
+  redis:
+    lettuce:
+      pool:                # En sistemas reactivos es mejor tener pocas y eficientes conexiones.
+        enabled: true
+        max-active: 64     # Máximo de conexiones activas
+        max-idle: 16       # Conexiones en espera (sin uso)
+        min-idle: 4        # Mínimo para mantener caliente
+        max-wait: 5000ms   # Espera máxima por conexión
+
+  kafka:
+    consumer:
+      auto-offset-reset: earliest # Si no hay offset guardado, empieza a consumir desde el primer mensaje del topic
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Deserializador para la clave del mensaje recibido
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Deserializador para el valor del mensaje recibido
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer # Serializador para la clave del mensaje que se va a enviar
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer # Serializador para el valor del mensaje que se va a enviar
+
+---
+
+server:
+  port: 8095
+
+---
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true  # Enables Circuit Breaker health status to be available through Actuator
+        slidingWindowSize: 10  # Number of calls that the Circuit Breaker will evaluate to calculate the failure rate (sliding window)
+        minimumNumberOfCalls: 5  # Minimum number of calls required before the Circuit Breaker in state closed evaluates whether to open or not
+        failureRateThreshold: 30  # Failure rate percentage that triggers the transition from CLOSED to OPEN
+        permittedNumberOfCallsInHalfOpenState: 3  # Number of calls allowed while in HALF_OPEN state to test if the service has recovered
+        automaticTransitionFromOpenToHalfOpenEnabled: true  # If enabled, the Circuit Breaker will automatically move from OPEN to HALF_OPEN after the configured time
+        waitDurationInOpenState: 35s  # Duration the Circuit Breaker remains in OPEN state before transitioning to HALF_OPEN
+        eventConsumerBufferSize: 10  # Size of the event buffer used to publish events to consumers (such as logs, metrics, etc.)
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.lang.RuntimeException
+  #        ignoreExceptions:
+  #          - com.aug.ecommerce.domain.exception.ErrorNegocioException
+  retry:
+    instances:
+      processPaymentWompiRetry:  # Put this in the method configured
+        maxAttempts: 3           # Total attempts: 1 original + 2 retries
+        waitDuration: 1s         # Wait time of 1 second between attempts
+        retryExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.lang.RuntimeException
+#        ignoreExceptions:
+#          - com.aug.ecommerce.domain.exception.ErrorNegocioException
+
+app:
+  redis:
+    timeout: ${APP_REDIS_TIMEOUT}
+    repositories:
+      enabled: ${APP_REDIS_REPOSITORIES_ENABLED}  # no usamos repositorios Spring Data comunes
+
+    redis-reservation:
+      host: ${APP_REDIS_REDIS_RESERVATION_HOST}
+      port: ${APP_REDIS_REDIS_RESERVATION_PORT}
+      database: ${APP_REDIS_REDIS_RESERVATION_DATABASE}   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
+      reservation-timeout-seconds: 120  # en segundos, tiempo de vida de las reservas en Redis
+      period-flux-seconds: 30 # periodo de ejecución del scheduler
+      key-prefix-reservation-cache: reservation.timeout.
+
+    redis-flight:
+      host: ${APP_REDIS_REDIS_FLIGHT_HOST}
+      port: ${APP_REDIS_REDIS_FLIGHT_PORT}
+      database: ${APP_REDIS_REDIS_FLIGHT_DATABASE}   # Colocamos diferentes bases de datos para separar los datos dentro del mismo Redis
+
+  kafka:
+    bootstrap-servers: ${APP_KAFKA_BOOTSTRAP_SERVERS} # Dirección del broker de Kafka al que se conectará la aplicación
+    orden-consumer-group: orden-consumer-group
+
+    producer: # Un topic por cada evento
+      reservation-created-topic: reservation.created
+      reservation-emitted-topic: reservation.emitted
+      flightseat-confirmed-topic: flightseat.confirmed
+      flightseat-rejected-topic: flightseat.rejected
+      ticket-created-topic: ticket.created
+
+    consumer:
+      reservation-flight-created-groupId: reservation-flight-created
+      reservation-flight-emitted-groupId: reservation-flight-emitted
+      flightseat-reservation-confirmed-groupId: flight-reservation-confirmed
+      flightseat-reservation-rejected-groupId: flight-reservation-rejected
+      ticket-reservation-created-groupId: ticket-reservation-created
