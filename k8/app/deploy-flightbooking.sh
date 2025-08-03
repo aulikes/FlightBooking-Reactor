@@ -1,19 +1,21 @@
 #!/bin/bash
 
-# Nombre del namespace para el despliegue
+# Script de despliegue para el microservicio FlightBooking en Minikube
+
+# Namespace de Kubernetes donde se desplegará la aplicación
 NAMESPACE="flightbooking-dev"
 
-# Ruta al directorio donde se encuentra el Dockerfile (ajústalo si es necesario)
-PROJECT_DIR="../../FlightBooking-reactor"
+# Determinar dinámicamente la raíz del proyecto (dos niveles arriba desde la ubicación del script)
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
 
-# Nombre de la imagen a construir y usar localmente
+# Nombre de la imagen Docker a construir localmente
 IMAGE_NAME="flightbooking:latest"
 
-# Activar el entorno Docker de Minikube para usar su daemon local
+# Configurar entorno Docker de Minikube para construir la imagen localmente en su daemon
 echo "Configurando entorno Docker de Minikube..."
-eval $(minikube docker-env)
+eval "$(minikube docker-env)" || { echo "Error: No se pudo configurar el entorno Docker de Minikube"; exit 1; }
 
-# Eliminar recursos anteriores si existen
+# Eliminar manifiestos anteriores para evitar conflictos
 echo "Eliminando posibles recursos anteriores..."
 kubectl delete -f 4-service-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
 kubectl delete -f 3-deployment-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
@@ -22,7 +24,7 @@ kubectl delete -f 1-configmap-flightbooking.yaml -n "$NAMESPACE" --ignore-not-fo
 
 sleep 2
 
-# Verificar si el namespace existe
+# Verificar existencia del namespace, y crearlo si no existe
 echo "Verificando si el namespace '$NAMESPACE' existe..."
 if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
   echo "Namespace no existe. Creando..."
@@ -31,27 +33,27 @@ else
   echo "Namespace '$NAMESPACE' ya existe."
 fi
 
-# Construir la imagen local
+# Construcción de imagen Docker
 echo "Construyendo imagen Docker local: $IMAGE_NAME"
-cd "$PROJECT_DIR" || { echo "No se pudo acceder al directorio del proyecto"; exit 1; }
-docker build -t "$IMAGE_NAME" .
+cd "$PROJECT_DIR" || { echo "Error: No se pudo acceder al directorio del proyecto: $PROJECT_DIR"; exit 1; }
 
-# Volver al directorio donde están los manifiestos
+docker build -t "$IMAGE_NAME" . || { echo "Error: Falló la construcción de la imagen Docker"; exit 1; }
+
+# Regresar al directorio original (donde están los manifiestos)
 cd - >/dev/null
 
 # Aplicar los manifiestos de Kubernetes
-echo "Aplicando manifiestos YAML..."
+echo "Aplicando manifiestos YAML de Kubernetes..."
 kubectl apply -f 1-configmap-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 2-secret-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 3-deployment-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 4-service-flightbooking.yaml -n "$NAMESPACE"
 
-# Verificar estado del pod
-echo ""
+# Esperar que el pod esté en estado Ready
 echo "Esperando a que el pod esté en estado Running..."
 kubectl wait --for=condition=ready pod -l app=flightbooking -n "$NAMESPACE" --timeout=60s
 
-# Mostrar logs iniciales
+# Mostrar logs de arranque
 echo ""
-echo "Logs de la aplicación:"
+echo "Logs iniciales del contenedor:"
 kubectl logs -l app=flightbooking -n "$NAMESPACE" --tail=50
