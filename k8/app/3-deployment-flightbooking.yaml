@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: flightbooking
-          image: redicuori/flightbooking:latest
-          imagePullPolicy: IfNotPresent
+          image: flightbooking:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8095
           env:
