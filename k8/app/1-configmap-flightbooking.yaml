@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flightbooking-config
+data:
+  SPRING_PROFILES_ACTIVE: "kube"
+  SPRING_R2DBC_URL: "r2dbc:postgresql://postgres-service:5432/flightbooking"
+  SPRING_R2DBC_URLJDBC: "jdbc:postgresql://postgres-service:5432/flightbooking"
+  SPRING_LIQUIBASE_ENABLED: "true"
+
+  APP_REDIS_TIMEOUT: "6000"
+  APP_REDIS_REPOSITORIES_ENABLED: "false"
+  APP_REDIS_REDIS_RESERVATION_HOST: "redis-service"
+  APP_REDIS_REDIS_RESERVATION_PORT: "6379"
+  APP_REDIS_REDIS_RESERVATION_DATABASE: "0"
+  APP_REDIS_REDIS_FLIGHT_HOST: "redis-service"
+  APP_REDIS_REDIS_FLIGHT_PORT: "6379"
+  APP_REDIS_REDIS_FLIGHT_DATABASE: "1"
+
+  APP_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
