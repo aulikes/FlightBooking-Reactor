@@ -73,9 +73,12 @@ spec:
           volumeMounts:
             - name: kafka-storage
               mountPath: /var/lib/kafka/data
+      volumes:
+        - name: kafka-storage
+          persistentVolumeClaim:
+            claimName: kafka-pvc  # En producción, este PVC debe usar StorageClass gestionado dinámicamente
           # En producción se recomienda definir los siguientes probes:
-          # livenessProbe:
-          #   httpGet:
+          # livenessProbe: httpGet:
           #     path: /
           #     port: 9094
           #   initialDelaySeconds: 10
@@ -86,15 +89,6 @@ spec:
           #     port: 9094
           #   initialDelaySeconds: 5
           #   periodSeconds: 10
-
-          # En producción se deben establecer límites de recursos:
-          # resources:
-          #   requests:
-          #     memory: "512Mi"
-          #     cpu: "250m"
-          #   limits:
-          #     memory: "1Gi"
-          #     cpu: "500m"
 
       # En producción se recomienda añadir afinidad y tolerancias:
       # affinity:
@@ -109,8 +103,3 @@ spec:
       #     operator: "Equal"
       #     value: "kafka"
       #     effect: "NoSchedule"
-
-      volumes:
-        - name: kafka-storage
-          persistentVolumeClaim:
-            claimName: kafka-pvc  # En producción, este PVC debe usar StorageClass gestionado dinámicamente
