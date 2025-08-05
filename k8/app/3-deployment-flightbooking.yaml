@@ -21,11 +21,11 @@ spec:
           ports:
             - containerPort: 8095
           env:
-            - name: SPRING_PROFILES_ACTIVE
+            - name: SPRING_PROFILE
               valueFrom:
                 configMapKeyRef:
                   name: flightbooking-config
-                  key: SPRING_PROFILES_ACTIVE
+                  key: SPRING_PROFILE
 
             - name: SPRING_R2DBC_URL
               valueFrom:
@@ -99,13 +99,13 @@ spec:
                   name: flightbooking-config
                   key: APP_KAFKA_BOOTSTRAP_SERVERS
 
-            - name: POSTGRES_USER
+            - name: SPRING_R2DBC_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: flightbooking-secret
                   key: POSTGRES_USER
 
-            - name: POSTGRES_PASSWORD
+            - name: SPRING_R2DBC_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: flightbooking-secret

@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: flightbooking-config
 data:
-  SPRING_PROFILES_ACTIVE: "kube"
+  SPRING_PROFILE: "kube" #Usado en el Dockerfile
   SPRING_R2DBC_URL: "r2dbc:postgresql://postgres-service:5432/flightbooking"
   SPRING_R2DBC_URLJDBC: "jdbc:postgresql://postgres-service:5432/flightbooking"
   SPRING_LIQUIBASE_ENABLED: "true"
@@ -17,4 +17,4 @@ data:
   APP_REDIS_REDIS_FLIGHT_PORT: "6379"
   APP_REDIS_REDIS_FLIGHT_DATABASE: "1"
 
-  APP_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  APP_KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9094"

@@ -22,6 +22,7 @@ spring:
         max-wait: 5000ms   # Espera máxima por conexión
 
   kafka:
+    bootstrap-servers: ${APP_KAFKA_BOOTSTRAP_SERVERS} # Dirección del broker de Kafka al que se conectará la aplicación
     consumer:
       auto-offset-reset: earliest # Si no hay offset guardado, empieza a consumir desde el primer mensaje del topic
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Deserializador para la clave del mensaje recibido
