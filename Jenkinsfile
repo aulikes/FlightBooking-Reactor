@@ -98,14 +98,16 @@ pipeline {
 
     stage('Wait for Pod Ready') {
       steps {
-        script {
-          try {
-            sh 'kubectl wait --for=condition=ready pod -l app=flightbooking -n ${NAMESPACE} --timeout=60s'
-          } catch (e) {
-            echo 'El pod no estuvo listo en 60 segundos. Revisar manualmente.'
-            sh 'kubectl get pods -n ${NAMESPACE}'
-            error('Pod no listo a tiempo.')
-          }
+        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+            script {
+              try {
+                sh 'kubectl wait --for=condition=ready pod -l app=flightbooking -n ${NAMESPACE} --timeout=180s'
+              } catch (e) {
+                echo 'El pod no estuvo listo en 180 segundos. Revisar manualmente.'
+                sh 'kubectl get pods -n ${NAMESPACE}'
+                error('Pod no listo a tiempo.')
+              }
+            }
         }
       }
     }
