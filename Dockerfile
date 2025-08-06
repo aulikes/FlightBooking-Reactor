@@ -2,8 +2,7 @@
 FROM gradle:8.5-jdk21 AS builder
 WORKDIR /app
 COPY . .
-# RUN gradle clean bootJar --no-daemon
-RUN ./gradlew clean bootJar --no-daemon
+RUN gradle clean bootJar --no-daemon
 
 # Etapa 2: imagen liviana para ejecución
 FROM eclipse-temurin:21-jre
