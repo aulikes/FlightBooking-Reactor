@@ -91,21 +91,21 @@ services:
   # ---------------------------------------------------
   # flightbooking-api: Aplicación Spring Boot
   # ---------------------------------------------------
-#  flightbooking-api:
-#    build:
-#      context: .             # Ruta donde está el Dockerfile de e-commerce
-#      dockerfile: Dockerfile
-#    container_name: flightbooking-api-flight
-#    depends_on:
-#      - kafka
-#      - redis
-#      - postgres
-#    ports:
-#      - "8093:8093"
-#    environment:
-#      SPRING_PROFILE: rabbit # Selección del archivo application-rabbit.yml
-#    networks:
-#      - flightbooking-net
+  flightbooking-api:
+    build:
+      context: .             # Ruta donde está el Dockerfile de e-commerce
+      dockerfile: Dockerfile
+    container_name: flightbooking-api-flight
+    depends_on:
+      - kafka
+      - redis
+      - postgres
+    ports:
+      - "8093:8093"
+    environment:
+      SPRING_PROFILE: docker # Selección del archivo application-docker.yml
+    networks:
+      - flightbooking-net
 
 # ---------------------------------------------------
 # Volúmenes persistentes
