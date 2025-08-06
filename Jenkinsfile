@@ -69,6 +69,12 @@ pipeline {
       }
     }
 
+    stage('Build JAR with Gradle') {
+      steps {
+        sh './gradlew clean bootJar --no-daemon --stacktrace'
+      }
+    }
+
     stage('Build Docker Image for Minikube') {
       steps {
         script {
