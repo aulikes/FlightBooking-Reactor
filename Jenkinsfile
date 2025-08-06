@@ -114,7 +114,9 @@ pipeline {
 
     stage('Show Initial Logs') {
       steps {
-        sh 'kubectl logs -l app=flightbooking -n ${NAMESPACE} --tail=30'
+        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+          sh 'kubectl logs -l app=flightbooking -n ${NAMESPACE} --tail=100'
+        }
       }
     }
   }
