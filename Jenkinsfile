@@ -5,7 +5,11 @@ pipeline {
     DOCKER_IMAGE = 'flightbooking-api'
     IMAGE_TAG = 'latest'
     NAMESPACE = 'flightbooking-dev'
-    TIMESTAMP = "${new Date().format('yyyyMMddHHmmss')}"
+//     TIMESTAMP = "${new Date().format('yyyyMMddHHmmss')}"
+  }
+
+  script {
+    env.TIMESTAMP = new Date().format('yyyyMMddHHmmss')
   }
 
   stages {
