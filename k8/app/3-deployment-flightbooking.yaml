@@ -4,6 +4,8 @@ metadata:
   name: flightbooking-deployment
   labels:
     app: flightbooking
+  annotations:
+    redeploy-timestamp: "{{ timestamp }}"
 spec:
   replicas: 1
   selector:
