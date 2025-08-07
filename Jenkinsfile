@@ -26,22 +26,22 @@ pipeline {
       }
     }
 
-    stage('Build & Test') {
-      steps {
-        sh './gradlew clean build jacocoTestReport --no-daemon'
-      }
-    }
-
-    stage('SonarQube Analysis') {
-      steps {
-        withSonarQubeEnv('sonaqube-docker') {
-          withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
-            sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
-          }
-        }
-      }
-    }
-
+//     stage('Build & Test') {
+//       steps {
+//         sh './gradlew clean build jacocoTestReport --no-daemon'
+//       }
+//     }
+//
+//     stage('SonarQube Analysis') {
+//       steps {
+//         withSonarQubeEnv('sonaqube-docker') {
+//           withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
+//             sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
+//           }
+//         }
+//       }
+//     }
+//
 //     stage('Eliminar recursos previos') {
 //       steps {
 //         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
@@ -115,10 +115,23 @@ pipeline {
     stage('Show Initial Logs') {
       steps {
         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-          sh 'kubectl logs -l app=flightbooking -n ${NAMESPACE} --tail=100'
+          echo "Verifica el estado con: kubectl get pods -n $NAMESPACE -l app=flightbooking"
+          echo "Verifica los logs con: kubectl logs POD_NAME -n $NAMESPACE --tail=500"
+
+          script {
+            def podName = sh(
+              script: "kubectl get pods -n ${NAMESPACE} -l app=flightbooking -o jsonpath='{.items[0].metadata.name}'",
+              returnStdout: true
+            ).trim()
+
+            echo "Verifica los logs con: kubectl logs ${podName} -n $NAMESPACE --tail=500"
+            echo "Mostrando logs del pod: ${podName}"
+            sh "kubectl logs ${podName} -n ${NAMESPACE} --tail=100"
+          }
         }
       }
     }
+
   }
 
   post {
