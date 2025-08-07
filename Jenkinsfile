@@ -18,6 +18,7 @@ pipeline {
 
     stage('Cleanup Gradle Locks') {
       steps {
+        // Libera posibles procesos o locks que bloquean Gradle
         sh 'rm -rf /root/.gradle/caches/journal-1/journal-1.lock || true'
         sh 'rm -rf /root/.gradle/daemon/8.5/registry.bin.lock || true'
         sh 'pkill -f gradle || true'
@@ -27,28 +28,48 @@ pipeline {
 
     stage('Build & Test') {
       steps {
-        sh './gradlew clean build jacocoTestReport bootJar --no-daemon'
+        sh './gradlew clean build jacocoTestReport --no-daemon'
       }
     }
 
-    stage('Verificar JAR antes de docker build') {
+    stage('SonarQube Analysis') {
       steps {
-        sh 'echo "Contenido de build/libs:" && ls -lh build/libs || echo "No existe la carpeta build/libs"'
+        withSonarQubeEnv('sonaqube-docker') {
+          withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
+            sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
+          }
+        }
       }
     }
 
-
-//     stage('SonarQube Analysis') {
+//     stage('Eliminar recursos previos') {
 //       steps {
-//         withSonarQubeEnv('sonaqube-docker') {
-//           withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
-//             sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
-//           }
+//         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+//             dir('k8/app') {
+//               sh '''
+//                 kubectl delete -f 4-service-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
+//                 kubectl delete -f 3-deployment-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
+//                 kubectl delete -f 2-secret-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
+//                 kubectl delete -f 1-configmap-flightbooking.yaml -n "$NAMESPACE" --ignore-not-found
+//               '''
+//             }
 //         }
 //       }
 //     }
 
-    stage('Build Docker Image (no rebuild)') {
+    stage('Create Namespace if not exists') {
+      steps {
+        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+            sh '''
+              if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
+                kubectl create namespace "$NAMESPACE"
+              fi
+            '''
+        }
+      }
+    }
+
+    stage('Build Docker Image for Minikube') {
       steps {
         script {
           sh '''
@@ -59,32 +80,53 @@ pipeline {
       }
     }
 
-    stage('Create Namespace') {
+    stage('Deploy to Kubernetes') {
       steps {
         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-          sh '''
-            if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
-              kubectl create namespace "$NAMESPACE"
-            fi
-          '''
+            dir('k8/app') {
+              sh '''
+                sed -i "s/{{ timestamp }}/${TIMESTAMP}/g" 3-deployment-flightbooking.yaml
+                kubectl apply -f 1-configmap-flightbooking.yaml -n ${NAMESPACE}
+                kubectl apply -f 2-secret-flightbooking.yaml -n ${NAMESPACE}
+                kubectl apply -f 3-deployment-flightbooking.yaml -n ${NAMESPACE}
+                kubectl apply -f 4-service-flightbooking.yaml -n ${NAMESPACE}
+              '''
+            }
         }
       }
     }
 
-    stage('Deploy to Kubernetes') {
+    stage('Wait for Pod Ready') {
       steps {
         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-          dir('k8/app') {
-            sh '''
-              sed -i "s/{{ timestamp }}/${TIMESTAMP}/g" 3-deployment-flightbooking.yaml
-              kubectl apply -f 1-configmap-flightbooking.yaml -n ${NAMESPACE}
-              kubectl apply -f 2-secret-flightbooking.yaml -n ${NAMESPACE}
-              kubectl apply -f 3-deployment-flightbooking.yaml -n ${NAMESPACE}
-              kubectl apply -f 4-service-flightbooking.yaml -n ${NAMESPACE}
-            '''
+          script {
+            try {
+              sh "kubectl wait --for=condition=ready pod -l app=flightbooking -n ${NAMESPACE} --timeout=180s"
+            } catch (e) {
+              echo 'El pod no estuvo listo en 180 segundos. Revisar manualmente.'
+              sh "kubectl get pods -n ${NAMESPACE}"
+              error('Pod no listo a tiempo.')
+            }
           }
         }
       }
+    }
+
+    stage('Show Initial Logs') {
+      steps {
+        withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+          sh 'kubectl logs -l app=flightbooking -n ${NAMESPACE} --tail=100'
+        }
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo 'Pipeline failed.'
+    }
+    success {
+      echo 'Pipeline completed successfully.'
     }
   }
 }
