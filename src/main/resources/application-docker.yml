@@ -23,7 +23,7 @@ spring:
 
 
   kafka:
-#    bootstrap-servers: kafka:9093 # Dirección del broker de Kafka al que se conectará la aplicación
+    bootstrap-servers: kafka:9093 # Dirección del broker de Kafka al que se conectará la aplicación
     consumer:
       auto-offset-reset: earliest # Si no hay offset guardado, empieza a consumir desde el primer mensaje del topic
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Deserializador para la clave del mensaje recibido

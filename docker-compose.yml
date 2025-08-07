@@ -1,5 +1,7 @@
 # Comando para el despliegue y agrupación por proyecto
 # docker compose -p flightbooking up -d
+#  docker compose build --no-cache flightbooking-api
+#  docker compose up
 
 services:
   # ---------------------------------------------------
@@ -101,7 +103,7 @@ services:
       - redis
       - postgres
     ports:
-      - "8093:8093"
+      - "8095:8095"
     environment:
       SPRING_PROFILE: docker # Selección del archivo application-docker.yml
     networks:
