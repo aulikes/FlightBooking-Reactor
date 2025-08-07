@@ -6,30 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Eliminar recursos previos') {
-            steps {
-                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
-                    dir('k8/kafka-zk') {
-                        sh '''
-                        # Eliminar Kafka
-                        kubectl delete -f 4-service-kafka.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 3-deployment-kafka.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 2-configmap-kafka.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 1-pvc-kafka.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 0-pv-kafka.yaml --ignore-not-found
-
-                        # Eliminar Zookeeper
-                        kubectl delete -f 4-service-zookeeper.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 3-deployment-zookeeper.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 2-configmap-zookeeper.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 1-pvc-zookeeper.yaml -n "$NAMESPACE" --ignore-not-found
-                        kubectl delete -f 0-pv-zookeeper.yaml --ignore-not-found
-                        '''
-                    }
-                }
-            }
-        }
-
         stage('Crear namespace si no existe') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
@@ -42,13 +18,37 @@ pipeline {
             }
         }
 
+        // Etapa opcional manual para aplicar los volúmenes una única vez
+        stage('(Manual) Aplicar volúmenes PV y PVC') {
+            when {
+                beforeInput true
+                expression {
+                    return false // <- Cambiar a true SOLO si es primera vez o se va a borrar todo el cluster
+                }
+            }
+            steps {
+                input message: "¿Aplicar volúmenes PV/PVC de Kafka y Zookeeper? (Solo si es realmente necesario)"
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    dir('k8/kafka-zk') {
+                        sh '''
+                        # Zookeeper
+                        kubectl apply -f 0-pv-zookeeper.yaml
+                        kubectl apply -f 1-pvc-zookeeper.yaml -n "$NAMESPACE"
+
+                        # Kafka
+                        kubectl apply -f 0-pv-kafka.yaml
+                        kubectl apply -f 1-pvc-kafka.yaml -n "$NAMESPACE"
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Desplegar Zookeeper') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
                     dir('k8/kafka-zk') {
                         sh '''
-                        kubectl apply -f 0-pv-zookeeper.yaml
-                        kubectl apply -f 1-pvc-zookeeper.yaml -n "$NAMESPACE"
                         kubectl apply -f 2-configmap-zookeeper.yaml -n "$NAMESPACE"
                         kubectl apply -f 3-deployment-zookeeper.yaml -n "$NAMESPACE"
                         kubectl apply -f 4-service-zookeeper.yaml -n "$NAMESPACE"
@@ -74,8 +74,6 @@ pipeline {
                 withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
                     dir('k8/kafka-zk') {
                         sh '''
-                        kubectl apply -f 0-pv-kafka.yaml
-                        kubectl apply -f 1-pvc-kafka.yaml -n "$NAMESPACE"
                         kubectl apply -f 2-configmap-kafka.yaml -n "$NAMESPACE"
                         kubectl apply -f 3-deployment-kafka.yaml -n "$NAMESPACE"
                         kubectl apply -f 4-service-kafka.yaml -n "$NAMESPACE"

@@ -10,12 +10,13 @@ metadata:
 spec:
   selector:
     app: kafka                           # Debe coincidir con el label del Deployment
-  type: ClusterIP                         # Para exponer el servicio fuera del clúster (local)
+  type: NodePort                         # Para exponer el servicio fuera del clúster (local)
   ports:
     - name: plaintext                    # Canal para clientes externos (host)
       protocol: TCP
       port: 9094                         # Puerto expuesto dentro del clúster
       targetPort: 9094                   # Puerto del contenedor
+      nodePort: 31094                    # Puerto expuesto en el host (localhost:31094)
 
     - name: internal                     # Canal interno entre pods/servicios
       protocol: TCP
