@@ -1,0 +1,12 @@
+# ConfigMap con configuración base de Zookeeper
+# Producción:
+# 1. Las configuraciones más complejas pueden provenir de archivos montados o sistemas externos.
+# 2. Este ConfigMap contiene solo variables no sensibles. No incluir credenciales aquí.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zookeeper-config                         # Nombre del ConfigMap
+data:
+  ZOOKEEPER_CLIENT_PORT: "2181"                  # Puerto en el que escucha Zookeeper dentro del contenedor
+  ZOOKEEPER_TICK_TIME: "2000"                    # Tiempo base de sincronización (en milisegundos)

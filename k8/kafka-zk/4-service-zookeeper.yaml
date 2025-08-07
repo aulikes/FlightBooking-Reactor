@@ -1,0 +1,18 @@
+# Servicio para exponer Zookeeper dentro del clúster (y desde el host si es necesario)
+# Producción:
+# 1. Generalmente se usa ClusterIP (acceso solo interno al clúster).
+# 2. NodePort puede usarse solo si se necesita acceder desde fuera del clúster en desarrollo.
+# 3. Para clústeres distribuidos, Zookeeper suele desplegarse como StatefulSet con puertos adicionales.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+spec:
+  selector:
+    app: zookeeper                                # Selecciona los pods con esta etiqueta
+  ports:
+    - protocol: TCP
+      port: 2181                                   # Puerto expuesto dentro del clúster
+      targetPort: 2181                             # Puerto expuesto por el contenedor
+  type: ClusterIP                                   # Para entorno local. En producción usar ClusterIP o LoadBalancer

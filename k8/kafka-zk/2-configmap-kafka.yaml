@@ -1,0 +1,18 @@
+# ConfigMap con variables de entorno para Kafka
+# Producción:
+# 1. No incluir credenciales aquí (usar Secrets si se usan SASL/SSL).
+# 2. Se puede parametrizar vía Helm o Kustomize.
+# 3. Algunas variables como `KAFKA_BROKER_ID` pueden sobrescribirse dinámicamente si se usa StatefulSet.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config                        # Nombre del ConfigMap
+data:
+  KAFKA_BROKER_ID: "1"                      # Identificador único del broker
+  KAFKA_ZOOKEEPER_CONNECT: "zookeeper-service:2181"   # Dirección del servicio de Zookeeper
+  KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9094,DOCKER://0.0.0.0:9093"
+  KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-service:9094,DOCKER://kafka:9093"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,DOCKER:PLAINTEXT"
+  KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
