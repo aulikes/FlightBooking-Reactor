@@ -5,6 +5,8 @@ Este proyecto es una **prueba de concepto (POC)** para demostrar un sistema de r
 
 Su propósito es **explorar cómo construir una solución moderna y desacoplada**, aplicando buenas prácticas arquitectónicas, patrones de diseño y tecnologías de última generación como **WebFlux, Reactor Core, Redis y Kafka**.
 
+---
+
 ## ⚙️ Tecnologías Clave
 - **Spring Boot 3.5 + WebFlux**
 - **Project Reactor (Reactor Core)**
@@ -15,6 +17,20 @@ Su propósito es **explorar cómo construir una solución moderna y desacoplada*
 - **Arquitectura Hexagonal (Ports & Adapters)**
 - **Domain-Driven Design (DDD)**
 - **Lombok**
+
+---
+
+## 🔍 Mejores Prácticas Aplicadas
+- Eventos **versionados** y trazables (`traceId`)
+- `IntegrationEventWrapper` como contrato de publicación
+- No se usan eventos genéricos universales
+- Dominios inmutables, controlados mediante **máquina de estados**
+- Separación completa entre **infraestructura y lógica de negocio**
+- **Value Objects** y entidades con responsabilidad encapsulada
+- Separación entre `command`, `use case`, `controller`, `publisher`, `listener`
+
+
+---
 
 ## 🧠 Enfoque Arquitectónico
 
@@ -43,6 +59,60 @@ Cada evento tiene su propio:
 - **Listener:** desacopla y responde de forma reactiva
 
 Esto permite trazabilidad, resiliencia y mantenimiento independiente.
+
+---
+
+## 🐳 Instalación con Docker Compose
+
+Este proyecto puede ejecutarse de forma completa con **Docker Compose** incluyendo sus dependencias como PostgreSQL, Redis y Kafka.
+
+### 🔧 Requisitos
+
+- Docker
+- Docker Compose
+
+### ▶️ Comandos para ejecutar
+
+```bash
+# Situarse dentro de la carpeta del proyecto y ejecutar
+docker compose -p flightbooking up -d
+
+# Una vez ejecutado el comando anterior, se puede verificar con
+docker ps
+```
+
+### 🧪 Verificación
+
+Una vez iniciado el entorno, accede a:
+
+- API: [http://localhost:8095/api/flight](http://localhost:8095/api/flight)
+- Swagger: [http://localhost:8095/swagger-ui.html](http://localhost:8095/swagger-ui.html)
+
+---
+
+## 📚 Documentación de la API (Swagger / OpenAPI)
+
+Este proyecto expone una interfaz interactiva Swagger UI para consultar los endpoints disponibles.
+
+- **Swagger UI**:  
+  👉 [http://localhost:8095/swagger-ui.html](http://localhost:8095/swagger-ui.html)
+
+- **OpenAPI YAML** (especificación de contrato):  
+  👉 [http://localhost:8095/v3/api-docs.yaml](http://localhost:8095/v3/api-docs.yaml)
+
+La documentación se genera automáticamente gracias a la integración con `springdoc-openapi` y se actualiza con base en los controladores REST definidos.
+
+## 🔗 Endpoints REST Disponibles
+
+| Método | URL                         | Descripción                         |
+|--------|-----------------------------|-------------------------------------|
+| POST   | `/api/flight`               | Crea un nuevo vuelo                 |
+| GET    | `/api/flight`               | Lista todos los vuelos              |
+| POST   | `/api/reservation`          | Crea una nueva reserva              |
+| GET    | `/api/reservation`          | Lista todas las reservas            |
+| POST   | `/api/ticket/checkin`       | Realiza el check-in de un ticket    |
+
+> Todos los endpoints devuelven respuestas en formato `application/json` y siguen el estilo RESTful.
 
 ---
 
@@ -108,19 +178,6 @@ Gracias al uso combinado de WebFlux + Reactor Core:
 4. Si no hay respuesta a tiempo → Redis marca como `FAILED`
 5. Si se confirma la reserva → se crea automáticamente un **Ticket**
 6. El usuario puede luego hacer **Check-in**
-
-## 🔍 Mejores Prácticas Aplicadas
-- Eventos **versionados** y trazables (`traceId`)
-- `IntegrationEventWrapper` como contrato de publicación
-- No se usan eventos genéricos universales
-- Dominios inmutables, controlados mediante **máquina de estados**
-- Separación completa entre **infraestructura y lógica de negocio**
-- **Value Objects** y entidades con responsabilidad encapsulada
-- Separación entre `command`, `use case`, `controller`, `publisher`, `listener`
-
-## ✅ Conclusión
-Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar sistemas distribuidos reactivos en Java. Es ideal para estudios de arquitectura avanzada, diseño de eventos, y adopción de WebFlux en entornos exigentes.
-
 
 ---
 
@@ -267,3 +324,10 @@ src/main/java/com/aug/flightbooking
 │           └── ReservationCreateMapper.java         # Mapper entre DTO y dominio para reserva
 
 ```
+
+---
+
+
+## ✅ Conclusión
+Este proyecto representa un ejemplo moderno, modular y realista de cómo abordar sistemas distribuidos reactivos en Java. Es ideal para estudios de arquitectura avanzada, diseño de eventos, y adopción de WebFlux en entornos exigentes.
+
