@@ -11,7 +11,7 @@ spec:
   accessModes:
     - ReadWriteOnce                         # Solo un nodo puede montar el volumen en modo escritura
   hostPath:
-    path: /tmp/volumes/kafka                # Ruta del host donde se almacenarán los datos
+    path: /tmp/volumes/kafka-flightbooking                # Ruta del host donde se almacenarán los datos
     type: DirectoryOrCreate                 # Crea la ruta si no existe
   persistentVolumeReclaimPolicy: Retain     # Conserva los datos incluso si el PVC se elimina
   storageClassName: local-path              # Para uso con Minikube. Cambiar en producción.

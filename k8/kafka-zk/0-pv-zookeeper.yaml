@@ -11,7 +11,7 @@ spec:
   accessModes:
     - ReadWriteOnce                           # Solo un nodo puede escribir
   hostPath:
-    path: /tmp/volumes/zookeeper              # Ruta del host donde se almacenarán los datos
+    path: /tmp/volumes/zookeeper-flightbooking              # Ruta del host donde se almacenarán los datos
                                               # Esta ruta debe existir en el host (o será creada).
     type: DirectoryOrCreate                 # Se asegura que la ruta se cree si no existe
   persistentVolumeReclaimPolicy: Retain       # Conserva los datos aunque se borre el PVC
