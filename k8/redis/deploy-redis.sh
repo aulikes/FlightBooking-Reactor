@@ -4,15 +4,15 @@
 
 NAMESPACE="flightbooking-dev"
 
-# Eliminar recursos previos en caso de errores anteriores
-echo "Eliminando recursos antiguos de Redis si existen..."
-kubectl delete -f 4-service-redis.yaml -n "$NAMESPACE" --ignore-not-found
-kubectl delete -f 3-deployment-redis.yaml -n "$NAMESPACE" --ignore-not-found
-kubectl delete -f 2-configmap-redis.yaml -n "$NAMESPACE" --ignore-not-found
-kubectl delete -f 1-pvc-redis.yaml -n "$NAMESPACE" --ignore-not-found
-kubectl delete -f 0-pv-redis.yaml --ignore-not-found
-
-sleep 2
+## Eliminar recursos previos en caso de errores anteriores
+#echo "Eliminando recursos antiguos de Redis si existen..."
+#kubectl delete -f 4-service-redis.yaml -n "$NAMESPACE" --ignore-not-found
+#kubectl delete -f 3-deployment-redis.yaml -n "$NAMESPACE" --ignore-not-found
+#kubectl delete -f 2-configmap-redis.yaml -n "$NAMESPACE" --ignore-not-found
+#kubectl delete -f 1-pvc-redis.yaml -n "$NAMESPACE" --ignore-not-found
+#kubectl delete -f 0-pv-redis.yaml --ignore-not-found
+#
+#sleep 2
 
 # Verificar si el namespace existe
 echo "Verificando si el namespace '$NAMESPACE' existe..."
