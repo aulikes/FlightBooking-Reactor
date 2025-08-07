@@ -16,22 +16,22 @@ pipeline {
       }
     }
 
-//     stage('Build & Test') {
-//       steps {
-//         sh './gradlew clean build jacocoTestReport --no-daemon'
-//       }
-//     }
-//
-//     stage('SonarQube Analysis') {
-//       steps {
-//         withSonarQubeEnv('sonaqube-docker') {
-//           withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
-//             sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
-//           }
-//         }
-//       }
-//     }
-//
+    stage('Build & Test') {
+      steps {
+        sh './gradlew clean build jacocoTestReport --no-daemon'
+      }
+    }
+
+    stage('SonarQube Analysis') {
+      steps {
+        withSonarQubeEnv('sonaqube-docker') {
+          withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
+            sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
+          }
+        }
+      }
+    }
+
 //     stage('Eliminar recursos previos') {
 //       steps {
 //         withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
