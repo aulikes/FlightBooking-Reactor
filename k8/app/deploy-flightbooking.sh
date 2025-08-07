@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script de despliegue para el microservicio FlightBooking en Minikube
+# Script de despliegue para el microservicio FlightBooking en Minikube de forma manual
 
 # Namespace de Kubernetes donde se desplegará la aplicación
 NAMESPACE="flightbooking-dev"
@@ -10,10 +10,6 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../" && pwd)"
 
 # Nombre de la imagen Docker a construir localmente
 IMAGE_NAME="flightbooking:latest"
-
-# Configurar entorno Docker de Minikube para construir la imagen localmente en su daemon
-echo "Configurando entorno Docker de Minikube..."
-eval "$(minikube docker-env)" || { echo "Error: No se pudo configurar el entorno Docker de Minikube"; exit 1; }
 
 # Eliminar manifiestos anteriores para evitar conflictos
 echo "Eliminando posibles recursos anteriores..."
@@ -33,6 +29,11 @@ else
   echo "Namespace '$NAMESPACE' ya existe."
 fi
 
+
+# Configurar entorno Docker de Minikube para construir la imagen localmente en su daemon
+echo "Configurando entorno Docker de Minikube..."
+eval "$(minikube docker-env)" || { echo "Error: No se pudo configurar el entorno Docker de Minikube"; exit 1; }
+
 # Construcción de imagen Docker
 echo "Construyendo imagen Docker local: $IMAGE_NAME"
 cd "$PROJECT_DIR" || { echo "Error: No se pudo acceder al directorio del proyecto: $PROJECT_DIR"; exit 1; }
@@ -48,10 +49,6 @@ kubectl apply -f 1-configmap-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 2-secret-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 3-deployment-flightbooking.yaml -n "$NAMESPACE"
 kubectl apply -f 4-service-flightbooking.yaml -n "$NAMESPACE"
-
-# Esperar que el pod esté en estado Ready
-echo "Esperando a que el pod esté en estado Running..."
-kubectl wait --for=condition=ready pod -l app=flightbooking -n "$NAMESPACE" --timeout=60s
 
 # Mostrar logs de arranque
 echo ""
