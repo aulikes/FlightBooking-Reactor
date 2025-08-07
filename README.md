@@ -25,9 +25,16 @@ Su propósito es **explorar cómo construir una solución moderna y desacoplada*
 - `IntegrationEventWrapper` como contrato de publicación
 - No se usan eventos genéricos universales
 - Dominios inmutables, controlados mediante **máquina de estados**
-- Separación completa entre **infraestructura y lógica de negocio**
+- Separación completa entre **infraestructura, aplicación y lógica de negocio**
 - **Value Objects** y entidades con responsabilidad encapsulada
 - Separación entre `command`, `use case`, `controller`, `publisher`, `listener`
+- Flujo reactivo puro con KafkaReceiver / KafkaSender (sin @KafkaListener)
+- Orquestación de listeners con ApplicationReadyEvent y suscripción controlada 
+- Uso de fábricas reutilizables para KafkaSender y KafkaReceiver
+- DTOs de entrada y salida separados, mapeados con MapStruct 
+- Configuración externalizada con AppProperties y @ConfigurationProperties
+- TTL en Redis como estrategia de expiración distribuida
+- Resultados ricos con clases, evitando tipos primitivos
 
 
 ---
