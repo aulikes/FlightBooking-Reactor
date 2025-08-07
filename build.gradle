@@ -80,7 +80,7 @@ dependencies {
 }
 
 // Desactiva la generación del JAR plano, para que en build/libs/ solo exista el jar ejecutable
-jar.enabled = false
+//jar.enabled = false
 
 // Plataforma de pruebas
 tasks.named('test') {
