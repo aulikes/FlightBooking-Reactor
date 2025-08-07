@@ -2,6 +2,12 @@ debug: false
 
 ---
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 spring:
   application:
     name: flightbooking

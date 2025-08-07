@@ -32,6 +32,9 @@ dependencies {
     implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+	// Open API
+	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.5.0'
+
 	//Redis
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
