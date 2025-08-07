@@ -11,4 +11,5 @@ public interface ReservationRepository {
     Mono<Reservation> save(Reservation reservation);
     Mono<Reservation> findById(Long id);
     Flux<Reservation> findReservationsBefore(Instant threshold, List<String> statuses);
+    Flux<Reservation> findAll();
 }

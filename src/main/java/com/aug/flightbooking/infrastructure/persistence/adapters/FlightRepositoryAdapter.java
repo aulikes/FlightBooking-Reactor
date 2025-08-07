@@ -7,6 +7,7 @@ import com.aug.flightbooking.infrastructure.persistence.mappers.FlightMapper;
 import com.aug.flightbooking.infrastructure.persistence.repositories.R2dbcFlightRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -24,5 +25,11 @@ public class FlightRepositoryAdapter implements FlightRepository {
     public Mono<Flight> save(Flight flight) {
         FlightEntity entity = FlightMapper.toEntity(flight);
         return r2dbcFlightRepository.save(entity).map(FlightMapper::toDomain);
+    }
+
+    @Override
+    public Flux<Flight> findAll() {
+        return r2dbcFlightRepository.findAll()
+                .map(FlightMapper::toDomain);
     }
 }

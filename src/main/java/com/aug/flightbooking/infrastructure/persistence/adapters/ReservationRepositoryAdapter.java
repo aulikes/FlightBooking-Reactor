@@ -37,4 +37,10 @@ public class ReservationRepositoryAdapter implements ReservationRepository {
         return repository.findByStatusesAtBefore(statuses, threshold)
                 .map(ReservationMapper::toDomain);
     }
+
+    @Override
+    public Flux<Reservation> findAll() {
+        return repository.findAll()
+                .map(ReservationMapper::toDomain);
+    }
 }
