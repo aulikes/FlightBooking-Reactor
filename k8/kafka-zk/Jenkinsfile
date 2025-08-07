@@ -23,7 +23,7 @@ pipeline {
             when {
                 beforeInput true
                 expression {
-                    return false // <- Cambiar a true SOLO si es primera vez o se va a borrar todo el cluster
+                    return true // <- Cambiar a true SOLO si es primera vez o se va a borrar todo el cluster
                 }
             }
             steps {
