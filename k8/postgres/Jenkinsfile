@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    environment {
+        NAMESPACE = "flightbooking-dev"
+    }
+
+    stages {
+        stage('Eliminar recursos previos') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    dir('k8/postgres') {
+                        sh '''
+                        kubectl delete -f 5-service-postgres.yaml -n "$NAMESPACE" --ignore-not-found
+                        kubectl delete -f 4-deployment-postgres.yaml -n "$NAMESPACE" --ignore-not-found
+                        kubectl delete -f 3-configmap-postgres.yaml -n "$NAMESPACE" --ignore-not-found
+                        kubectl delete -f 2-secret-postgres.yaml -n "$NAMESPACE" --ignore-not-found
+                        kubectl delete -f 1-pvc-postgres.yaml -n "$NAMESPACE" --ignore-not-found
+                        kubectl delete -f 0-pv-postgres.yaml --ignore-not-found
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Crear namespace si no existe') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    if ! kubectl get namespace "$NAMESPACE" >/dev/null 2>&1; then
+                      kubectl create namespace "$NAMESPACE"
+                    fi
+                    '''
+                }
+            }
+        }
+
+        stage('Aplicar manifiestos') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    dir('k8/postgres') {
+                        sh '''
+                        kubectl apply -f 0-pv-postgres.yaml
+                        kubectl apply -f 1-pvc-postgres.yaml -n "$NAMESPACE"
+                        kubectl apply -f 2-secret-postgres.yaml -n "$NAMESPACE"
+                        kubectl apply -f 3-configmap-postgres.yaml -n "$NAMESPACE"
+                        kubectl apply -f 4-deployment-postgres.yaml -n "$NAMESPACE"
+                        kubectl apply -f 5-service-postgres.yaml -n "$NAMESPACE"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Mostrar credenciales') {
+            steps {
+                withCredentials([file(credentialsId: 'kubeconfig-jenkins', variable: 'KUBECONFIG')]) {
+                    sh '''
+                    echo ""
+                    USER=$(kubectl get secret postgres-secret -n "$NAMESPACE" -o jsonpath="{.data.postgres-user}" | base64 --decode)
+                    PASS=$(kubectl get secret postgres-secret -n "$NAMESPACE" -o jsonpath="{.data.postgres-password}" | base64 --decode)
+                    DBNAME=$(kubectl get configmap postgres-config -n "$NAMESPACE" -o jsonpath="{.data.DB_NAME}")
+                    PORT=$(kubectl get service postgres-service -n "$NAMESPACE" -o jsonpath="{.spec.ports[0].nodePort}")
+
+                    echo "PostgreSQL desplegado correctamente:"
+                    echo "  Host: localhost"
+                    echo "  Puerto: $PORT"
+                    echo "  Usuario: $USER"
+                    echo "  Contraseña: $PASS"
+                    echo "  Base de Datos: $DBNAME"
+                    '''
+                }
+            }
+        }
+    }
+}
