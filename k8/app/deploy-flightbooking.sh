@@ -55,5 +55,5 @@ kubectl wait --for=condition=ready pod -l app=flightbooking -n "$NAMESPACE" --ti
 
 # Mostrar logs de arranque
 echo ""
-echo "Logs iniciales del contenedor:"
-kubectl logs -l app=flightbooking -n "$NAMESPACE" --tail=50
+echo "Verifica el estado con: kubectl get pods -n $NAMESPACE -l app=flightbooking"
+echo "Verifica los logs con: kubectl logs -l app=flightbooking -n $NAMESPACE --tail=500"
