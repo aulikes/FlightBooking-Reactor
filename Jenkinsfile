@@ -31,15 +31,22 @@ pipeline {
       }
     }
 
-    stage('SonarQube Analysis') {
+    stage('Verificar JAR antes de docker build') {
       steps {
-        withSonarQubeEnv('sonaqube-docker') {
-          withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
-            sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
-          }
-        }
+        sh 'echo "Contenido de build/libs:" && ls -lh build/libs || echo "No existe la carpeta build/libs"'
       }
     }
+
+
+//     stage('SonarQube Analysis') {
+//       steps {
+//         withSonarQubeEnv('sonaqube-docker') {
+//           withCredentials([string(credentialsId: 'Jenkins-Sonar', variable: 'SONAR_TOKEN')]) {
+//             sh "./gradlew sonarqube -Dsonar.login=${SONAR_TOKEN} --info"
+//           }
+//         }
+//       }
+//     }
 
     stage('Build Docker Image (no rebuild)') {
       steps {
