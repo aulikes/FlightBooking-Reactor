@@ -16,16 +16,6 @@ pipeline {
       }
     }
 
-    stage('Cleanup Gradle Locks') {
-      steps {
-        // Libera posibles procesos o locks que bloquean Gradle
-        sh 'rm -rf /root/.gradle/caches/journal-1/journal-1.lock || true'
-        sh 'rm -rf /root/.gradle/daemon/8.5/registry.bin.lock || true'
-        sh 'pkill -f gradle || true'
-        sh 'pkill -f java || true'
-      }
-    }
-
 //     stage('Build & Test') {
 //       steps {
 //         sh './gradlew clean build jacocoTestReport --no-daemon'
