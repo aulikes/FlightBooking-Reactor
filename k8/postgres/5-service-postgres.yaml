@@ -12,6 +12,4 @@ spec:
     - protocol: TCP
       port: 5432                          # Puerto interno del clúster
       targetPort: 5432                    # Puerto del contenedor
-      nodePort: 31432                     # Puerto en el host (fuera del clúster)
-  type: NodePort                          # Permite acceso desde el host (localhost:31432)
-                                          # En producción, type debe ser ClusterIP o LoadBalancer
+  type: LoadBalancer
