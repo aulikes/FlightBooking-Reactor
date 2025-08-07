@@ -7,8 +7,7 @@ spec:
   selector:
     app: flightbooking
   ports:
-    - port: 8095           # Puerto dentro del clúster
-      targetPort: 8095     # Puerto del contenedor
-      nodePort: 31095      # Puerto expuesto en tu máquina host (puedes cambiarlo si ya está usado)
+    - port: 8095
+      targetPort: 8095
       protocol: TCP
-  type: NodePort           # Permite el acceso desde el exterior del clúster
+  type: ClusterIP
