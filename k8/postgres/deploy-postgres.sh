@@ -32,4 +32,8 @@ kubectl apply -f 3-configmap-postgres.yaml -n "$NAMESPACE"
 kubectl apply -f 4-deployment-postgres.yaml -n "$NAMESPACE"
 kubectl apply -f 5-service-postgres.yaml -n "$NAMESPACE"
 
+echo ""
+echo "PostgreSQL desplegado correctamente en el namespace '$NAMESPACE'."
+echo "Verifica con: kubectl get pods -n $NAMESPACE -l app=postgres"
+
 
