@@ -105,24 +105,25 @@ jacocoTestReport {
 		html.required = true
 		csv.required = false
 	}
-	// Excluir del reporte de cobertura
-	def excludes = [
-		'com/aug/flightbooking/domain/exceptions/**',							//no Excepciones
-		'com/aug/flightbooking/infrastructure/config/**',						//no Configuraciones de Infra
-		'com/aug/flightbooking/infrastructure/init/**',							//no Inicializaciones desde Infra
-		'com/aug/flightbooking/infrastructure/web/mappers/**',					//no Mappers web in/out desde infra
-		'com/aug/flightbooking/infrastructure/web/dtos/**',						//no DTOs web in/out desde infra
-		'com/aug/flightbooking/infrastructure/persistence/entities/**'			//no Entities persistencia desde infra
-	]
-	classDirectories.setFrom(files(classDirectories.files.collect {
-		fileTree(dir: it, exclude: excludes)
-	}))
+//	// Excluir del reporte de cobertura
+//	def excludes = [
+//		'com/aug/flightbooking/domain/exceptions/**',							//no Excepciones
+//		'com/aug/flightbooking/infrastructure/config/**',						//no Configuraciones de Infra
+//		'com/aug/flightbooking/infrastructure/init/**',							//no Inicializaciones desde Infra
+//		'com/aug/flightbooking/infrastructure/web/mappers/**',					//no Mappers web in/out desde infra
+//		'com/aug/flightbooking/infrastructure/web/dtos/**',						//no DTOs web in/out desde infra
+//		'com/aug/flightbooking/infrastructure/persistence/entities/**'			//no Entities persistencia desde infra
+//	]
+//	classDirectories.setFrom(files(classDirectories.files.collect {
+//		fileTree(dir: it, exclude: excludes)
+//	}))
 }
 
-sonar {
+def sonarProps = new Properties()
+file("sonar-project.properties").withReader { sonarProps.load(it) }
+
+sonarqube {
 	properties {
-		property "sonar.projectKey", "flightbooking-api"
-		property "sonar.host.url", "http://sonarqube:9000"
-		property "sonar.java.binaries", "build/classes/java/main"
+		sonarProps.each { k, v -> property(k, v) }
 	}
 }
