@@ -3,47 +3,90 @@ package com.aug.flightbooking.application.service;
 import com.aug.flightbooking.application.events.FlightseatRejectedEvent;
 import com.aug.flightbooking.application.ports.out.ReservationCache;
 import com.aug.flightbooking.domain.models.reservation.ReservationStatusAction;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * Pruebas unitarias para FlightseatRejectedEventHandlerService.
+ * Se valida que actualice el estado a REJECTED y que cancele el timeout en caché.
+ */
+@ExtendWith(MockitoExtension.class)
 class FlightseatRejectedEventHandlerServiceTest {
 
+    @Mock
     private ReservationStatusUpdater reservationStatusUpdater;
+
+    @Mock
     private ReservationCache reservationCache;
-    private FlightseatRejectedEventHandlerService handler;
 
-    @BeforeEach
-    void setUp() {
-        reservationStatusUpdater = mock(ReservationStatusUpdater.class);
-        reservationCache = mock(ReservationCache.class);
+    @InjectMocks
+    private FlightseatRejectedEventHandlerService service;
 
-        handler = new FlightseatRejectedEventHandlerService(reservationStatusUpdater, reservationCache);
+    @Test
+    @DisplayName("handle(): debe actualizar a REJECTED y cancelar timeout")
+    void handle_happy_path() {
+        // Se prepara un evento con reservationId y razón de rechazo
+        FlightseatRejectedEvent event = new FlightseatRejectedEvent(111L, "Sin cupos");
+
+        // Se stubbean interacciones exitosas
+        when(reservationStatusUpdater.updateStatus(eq(111L), eq("Sin cupos"), eq(ReservationStatusAction.REJECTED)))
+                .thenReturn(Mono.empty());
+        when(reservationCache.cancelTimeout(111L)).thenReturn(Mono.empty());
+
+        // Se ejecuta el caso de uso
+        StepVerifier.create(service.handle(event))
+                .verifyComplete();
+
+        // Se verifica actualización a REJECTED
+        verify(reservationStatusUpdater, times(1))
+                .updateStatus(111L, "Sin cupos", ReservationStatusAction.REJECTED);
+
+        // Se verifica cancelación de timeout
+        verify(reservationCache, times(1)).cancelTimeout(111L);
+
+        // Se comprueba el orden: primero actualizar, luego cancelar timeout
+        InOrder inOrder = inOrder(reservationStatusUpdater, reservationCache);
+        inOrder.verify(reservationStatusUpdater).updateStatus(111L, "Sin cupos", ReservationStatusAction.REJECTED);
+        inOrder.verify(reservationCache).cancelTimeout(111L);
     }
 
     @Test
-    void shouldUpdateStatusToRejectedAndCancelTimeout() {
-        // Se define el ID de reserva simulado y la razón de rechazo
-        Long reservationId = 1L;
-        String reason = "Vuelo lleno";
+    @DisplayName("handle(): debe completar y aún intentar cancelar timeout si falla updateStatus (onErrorResume)")
+    void handle_proceeds_when_updateStatus_errors() {
+        FlightseatRejectedEvent event = new FlightseatRejectedEvent(222L, "Overbooking");
 
-        // Se simulan las respuestas exitosas de los mocks
-        when(reservationStatusUpdater.updateStatus(reservationId, reason, ReservationStatusAction.REJECTED))
-                .thenReturn(Mono.empty());
-        when(reservationCache.cancelTimeout(reservationId)).thenReturn(Mono.empty());
+        when(reservationStatusUpdater.updateStatus(eq(222L), eq("Overbooking"), eq(ReservationStatusAction.REJECTED)))
+                .thenReturn(Mono.error(new RuntimeException("Fallo al actualizar")));
+        when(reservationCache.cancelTimeout(222L)).thenReturn(Mono.empty());
 
-        // Se construye el evento de rechazo
-        FlightseatRejectedEvent event = new FlightseatRejectedEvent(reservationId, reason);
-
-        // Se verifica que el flujo se complete exitosamente
-        StepVerifier.create(handler.handle(event))
+        StepVerifier.create(service.handle(event))
                 .verifyComplete();
 
-        // Se verifica que se llamaron las dependencias con los argumentos esperados
-        verify(reservationStatusUpdater).updateStatus(reservationId, reason, ReservationStatusAction.REJECTED);
-        verify(reservationCache).cancelTimeout(reservationId);
+        // A pesar del error en updateStatus, se intenta cancelar el timeout
+        verify(reservationCache, times(1)).cancelTimeout(222L);
+    }
+
+    @Test
+    @DisplayName("handle(): debe completar aunque falle cancelTimeout (onErrorResume)")
+    void handle_ignores_cache_errors() {
+        FlightseatRejectedEvent event = new FlightseatRejectedEvent(333L, "Ruta cerrada");
+
+        when(reservationStatusUpdater.updateStatus(eq(333L), eq("Ruta cerrada"), eq(ReservationStatusAction.REJECTED)))
+                .thenReturn(Mono.empty());
+        when(reservationCache.cancelTimeout(333L))
+                .thenReturn(Mono.error(new IllegalStateException("Redis caído")));
+
+        StepVerifier.create(service.handle(event))
+                .verifyComplete();
     }
 }
