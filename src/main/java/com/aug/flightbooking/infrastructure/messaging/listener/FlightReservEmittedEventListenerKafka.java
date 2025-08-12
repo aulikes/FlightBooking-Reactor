@@ -31,22 +31,24 @@ public class FlightReservEmittedEventListenerKafka {
 
         return receiver.receive()
             .flatMap(record ->
-                // Deserializamos el mensaje del topic a un objeto ReservationCreatedEvent
+                // Deserializamos el mensaje del topic a un objeto ReservationEmittedEvent
                 decoder.decode(record.value(), ReservationEmittedEvent.class)
-                    // Ejecutamos la lógica de dominio para procesar la reserva
                     .flatMap(event ->
                         handler.handle(event)
-                            // Registramos éxito del procesamiento
-                            .doOnSuccess(__ ->
-                                log.info("Evento procesado correctamente. reservationId={}", event.reservationId())
-                            )
+                            .doOnSuccess(__ -> log.info("[reservation.emitted] Procesado OK. reservationId={}", event.reservationId()))
                     )
-                    // Solo después de procesar con éxito, confirmamos el offset al broker
-                    .then(Mono.<Void>fromRunnable(record.receiverOffset()::acknowledge))
+                    .onErrorResume(ex -> {
+                        log.error("[reservation.emitted] Error procesando evento", ex);
+                        return Mono.empty(); // no se propaga el error
+                    })
+                    .then(Mono.<Void>fromRunnable(() -> {
+                        log.debug("[reservation.emitted] ACK offset={} partition={}", record.offset(), record.partition());
+                        record.receiverOffset().acknowledge();
+                    }))
             )
             // Se ejecuta una vez cuando comienza la suscripción al topic
             .doOnSubscribe(sub -> log.info("FlightReservEmittedEventListenerKafka activo"))
             // Manejo de errores a nivel de flujo completo
-            .doOnError(e -> log.error("Error procesando evento en FlightReservEmittedEventListenerKafka", e));
+            .doOnError(e -> log.error("[reservation.emitted] Error en stream principal", e));
     }
 }
