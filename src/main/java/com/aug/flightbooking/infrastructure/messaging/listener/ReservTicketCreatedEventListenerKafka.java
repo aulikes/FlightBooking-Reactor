@@ -33,20 +33,24 @@ public class ReservTicketCreatedEventListenerKafka {
             .flatMap(record ->
                 // Deserializamos el mensaje del topic a un objeto ReservationCreatedEvent
                 decoder.decode(record.value(), TicketCreatedEvent.class)
-                    // Ejecutamos la lógica de dominio para procesar la reserva
                     .flatMap(event ->
                         handler.handle(event)
-                            // Registramos éxito del procesamiento
-                            .doOnSuccess(__ ->
-                                log.info("Evento procesado correctamente. reservationId={}", event.reservationId())
-                            )
+                            .doOnSuccess(__ -> log.info(
+                                "[ticket.created] Procesado OK reservationId={}", event.reservationId()
+                            ))
                     )
-                    // Solo después de procesar con éxito, confirmamos el offset al broker
-                    .then(Mono.<Void>fromRunnable(record.receiverOffset()::acknowledge))
+                    .onErrorResume(ex -> {
+                        log.error("[ticket.created] Error procesando evento", ex);
+                        return Mono.empty();
+                    })
+                    .then(Mono.<Void>fromRunnable(() -> {
+                        log.debug("[ticket.created] ACK offset={} partition={}", record.offset(), record.partition());
+                        record.receiverOffset().acknowledge();
+                    }))
             )
             // Se ejecuta una vez cuando comienza la suscripción al topic
             .doOnSubscribe(sub -> log.info("ReservTicketCreatedEventListenerKafka activo"))
             // Manejo de errores a nivel de flujo completo
-            .doOnError(e -> log.error("Error procesando evento en ReservTicketCreatedEventListenerKafka", e));
+            .doOnError(e -> log.error("[ticket.created] Error en stream principal", e));
     }
 }
