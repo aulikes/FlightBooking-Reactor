@@ -16,15 +16,16 @@ import reactor.kafka.receiver.ReceiverOffset;
 import reactor.kafka.receiver.ReceiverRecord;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * Tests para ReservTicketCreatedEventListenerKafka.
- * Comportamiento esperado (como en los otros listeners):
- *  - Éxito: procesa y ACK.
- *  - Error en decode: NO propaga, ACK y completa.
- *  - Error en handler: NO propaga, ACK y completa.
+ * Tests para ReservTicketCreatedEventListenerKafka con:
+ * - Éxito: decode + handler OK => ACK, sin DLQ.
+ * - Falla en decode: NO retry, va a DLQ y ACK.
+ * - Falla en handler con retry(3): tras agotar, va a DLQ y ACK.
  */
 @ExtendWith(MockitoExtension.class)
 class ReservTicketCreatedEventListenerKafkaTest {
@@ -37,6 +38,8 @@ class ReservTicketCreatedEventListenerKafkaTest {
     @Mock private ReactiveJsonDecoder decoder;
     @Mock private ReservationConfirmedEventHandler handler;
     @Mock private KafkaReceiver<String, byte[]> receiver;
+
+    @Mock private KafkaDlqPublisher dlqPublisher;
 
     @InjectMocks
     private ReservTicketCreatedEventListenerKafka listener;
@@ -52,7 +55,7 @@ class ReservTicketCreatedEventListenerKafkaTest {
         when(producer.getTicketCreatedTopic()).thenReturn("ticket.created");
         when(consumer.getTicketReservationCreatedGroupId()).thenReturn("grp-ticket-created");
 
-        // Mock estático flexible (evita mismatches de argumentos exactos)
+        // Mockeamos el método estático para devolver nuestro receiver
         receiverFactoryMock = mockStatic(KafkaReceiverFactory.class);
         receiverFactoryMock
                 .when(() -> KafkaReceiverFactory.createReceiver(anyString(), anyString(), anyString()))
@@ -69,14 +72,15 @@ class ReservTicketCreatedEventListenerKafkaTest {
         ReceiverOffset offset = mock(ReceiverOffset.class);
         when(record.value()).thenReturn(payload);
         when(record.receiverOffset()).thenReturn(offset);
-        // acknowledge es side-effect; no tiene retorno
+        // acknowledge es side-effect sin retorno
         doNothing().when(offset).acknowledge();
         return record;
     }
 
     @Test
-    @DisplayName("onMessage(): éxito — decodifica, handler OK, ACK y completa")
-    void onMessage_happy_path() {
+    @DisplayName("Éxito: decodifica, handler OK ⇒ ACK y no DLQ")
+    void onMessage_happy_path_ack_only() {
+        String topic = "ticket.created";
         TicketCreatedEvent evt = new TicketCreatedEvent(11L, "OK");
         byte[] bytes = "{\"reservationId\":11,\"message\":\"OK\"}".getBytes();
         ReceiverRecord<String, byte[]> record = mockRecord(bytes);
@@ -89,38 +93,50 @@ class ReservTicketCreatedEventListenerKafkaTest {
 
         verify(handler, times(1)).handle(evt);
         verify(record.receiverOffset(), times(1)).acknowledge();
+        verifyNoInteractions(dlqPublisher);
     }
 
     @Test
-    @DisplayName("onMessage(): falla decoder — se absorbe el error, ACK y completa")
-    void onMessage_decoder_error_ack_and_complete() {
+    @DisplayName("Falla decode: NO retry, envía a DLQ y ACK")
+    void onMessage_decode_failure_goes_dlq_and_ack() {
+        String topic = "ticket.created";
         byte[] bytes = "invalid".getBytes();
         ReceiverRecord<String, byte[]> record = mockRecord(bytes);
 
         when(receiver.receive()).thenReturn(Flux.just(record));
         when(decoder.decode(bytes, TicketCreatedEvent.class))
                 .thenReturn(Mono.error(new RuntimeException("bad json")));
+        when(dlqPublisher.sendToDlq(topic, bytes)).thenReturn(Mono.empty());
 
         StepVerifier.create(listener.onMessage()).verifyComplete();
 
-        verify(record.receiverOffset(), times(1)).acknowledge();
         verifyNoInteractions(handler);
+        verify(dlqPublisher, times(1)).sendToDlq(topic, bytes);
+        verify(record.receiverOffset(), times(1)).acknowledge();
     }
 
     @Test
-    @DisplayName("onMessage(): falla handler — se absorbe el error, ACK y completa")
-    void onMessage_handler_error_ack_and_complete() {
+    @DisplayName("Falla handler con retry(3): tras agotar, DLQ y ACK")
+    void onMessage_handler_failure_retries_then_dlq_and_ack() {
+        String topic = "ticket.created";
         TicketCreatedEvent evt = new TicketCreatedEvent(22L, "OK");
         byte[] bytes = "{\"reservationId\":22,\"message\":\"OK\"}".getBytes();
         ReceiverRecord<String, byte[]> record = mockRecord(bytes);
 
         when(receiver.receive()).thenReturn(Flux.just(record));
         when(decoder.decode(bytes, TicketCreatedEvent.class)).thenReturn(Mono.just(evt));
+        // handler falla siempre → 1 intento inicial + 3 reintentos
         when(handler.handle(evt)).thenReturn(Mono.error(new RuntimeException("boom")));
+        when(dlqPublisher.sendToDlq(topic, bytes)).thenReturn(Mono.empty());
 
-        StepVerifier.create(listener.onMessage()).verifyComplete();
+        // Con tiempo virtual para no esperar 1.5s reales (3*500ms)
+        StepVerifier.withVirtualTime(() -> listener.onMessage())
+                .thenAwait(Duration.ofMillis(1500))
+                .verifyComplete();
 
-        verify(handler, times(1)).handle(evt);
+        // 1 + 3 reintentos = 4 invocaciones
+        verify(handler, times(4)).handle(evt);
+        verify(dlqPublisher, times(1)).sendToDlq(topic, bytes);
         verify(record.receiverOffset(), times(1)).acknowledge();
     }
 }
