@@ -36,11 +36,7 @@ public class ReservationEmittedEventHandlerService implements ReservationEmitted
                 })
             )
             .onErrorResume(ex -> {
-                if (ex instanceof IllegalArgumentException) {
-                    log.warn("[handle][reservationId={}] Negocio: {}", event.reservationId(), ex.getMessage());
-                } else {
-                    log.error("[handle][reservationId={}] Técnico: ", event.reservationId(), ex);
-                }
+                log.error("[handle][reservationId={}] Técnico: ", event.reservationId(), ex);
                 return Mono.empty(); // O Mono.error(ex) si quieres que el error burbujee
             });
     }

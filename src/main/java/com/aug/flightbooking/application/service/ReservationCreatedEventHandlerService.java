@@ -55,11 +55,7 @@ public class ReservationCreatedEventHandlerService implements ReservationCreated
                 }
             })
             .onErrorResume(ex -> {
-                if (ex instanceof IllegalArgumentException) {
-                    log.warn("Negocio: {}", ex.getMessage());
-                } else {
-                    log.error("Técnico: ", ex);
-                }
+                log.error("Técnico: ", ex);
                 return Mono.empty();
             });
     }
