@@ -34,20 +34,20 @@ public class ReservFlightseatConfirmedEventListenerKafka {
                                 .flatMap(event ->
                                         handler.handle(event)
                                                 .doOnSuccess(ignored -> log.info(
-                                                        "[Listener Confirmed] Procesado reservationId={}", event.reservationId()
+                                                        "[flightseat.confirmed] Procesado reservationId={}", event.reservationId()
                                                 ))
                                 )
                                 .onErrorResume(ex -> {
-                                    log.error("[Listener Confirmed] Error procesando evento", ex);
+                                    log.error("[flightseat.confirmed] Error procesando evento", ex);
                                     return Mono.empty(); // evitar bloqueo
                                 })
                                 .then(Mono.<Void>fromRunnable(() -> {
-                                    log.debug("[Listener Confirmed] ACK offset={} partition={}", record.offset(), record.partition());
+                                    log.debug("[flightseat.confirmed] ACK offset={} partition={}", record.offset(), record.partition());
                                     record.receiverOffset().acknowledge();
                                 }))
                 )
-                .doOnSubscribe(sub -> log.info("[Listener Confirmed] Suscrito al tópico"))
-                .doOnError(e -> log.error("[Listener Confirmed] Error en el stream general", e));
+                .doOnSubscribe(sub -> log.info("ReservFlightseatConfirmedEventListenerKafka activo"))
+                .doOnError(e -> log.error("[flightseat.confirmed] Error en stream principal", e));
     }
 }
 
