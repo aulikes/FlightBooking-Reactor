@@ -122,7 +122,7 @@ jacocoTestReport {
 def sonarProps = new Properties()
 file("sonar-project.properties").withReader { sonarProps.load(it) }
 
-sonarqube {
+sonar {
 	properties {
 		sonarProps.each { k, v -> property(k, v) }
 	}
