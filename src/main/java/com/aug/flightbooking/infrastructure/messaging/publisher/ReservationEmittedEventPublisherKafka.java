@@ -3,7 +3,6 @@ package com.aug.flightbooking.infrastructure.messaging.publisher;
 import com.aug.flightbooking.application.events.ReservationEmittedEvent;
 import com.aug.flightbooking.application.ports.out.ReservationEmittedEventPublisher;
 import com.aug.flightbooking.infrastructure.config.AppProperties;
-import com.aug.flightbooking.infrastructure.config.KafkaSenderFactory;
 import com.aug.flightbooking.infrastructure.messaging.serialization.ReactiveJsonEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -20,10 +19,11 @@ public class ReservationEmittedEventPublisherKafka implements ReservationEmitted
     private final AppProperties.Kafka.Producer properties;
     private final ReactiveJsonEncoder encoder;
 
-    public ReservationEmittedEventPublisherKafka(AppProperties properties, ReactiveJsonEncoder encoder) {
+    public ReservationEmittedEventPublisherKafka(KafkaSender<String, byte[]> kafkaSender,
+                                                 AppProperties properties, ReactiveJsonEncoder encoder) {
         this.encoder = encoder;
         this.properties = properties.getKafka().getProducer();
-        this.kafkaSender = KafkaSenderFactory.createSender(properties.getKafka().getBootstrapServers());
+        this.kafkaSender = kafkaSender;
     }
 
     @Override

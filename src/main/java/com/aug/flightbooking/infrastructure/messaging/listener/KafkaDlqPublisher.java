@@ -16,11 +16,10 @@ import reactor.kafka.sender.SenderRecord;
 public class KafkaDlqPublisher {
 
     private final AppProperties properties;
+    private final KafkaSender<String, byte[]> kafkaSender;
 
     public Mono<Void> sendToDlq(String mainTopic, byte[] payload) {
         String dlqTopic = resolveDlqTopic(mainTopic);
-
-        KafkaSender<String, byte[]> kafkaSender = KafkaSenderFactory.createSender(properties.getKafka().getBootstrapServers());
         ProducerRecord<String, byte[]> pr = new ProducerRecord<>(dlqTopic, payload);
 
         return kafkaSender.send(Mono.just(SenderRecord.create(pr, null)))
