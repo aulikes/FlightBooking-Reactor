@@ -3,6 +3,7 @@ package com.aug.flightbooking.infrastructure.web.controllers;
 import com.aug.flightbooking.application.ports.in.CheckInTicketUseCase;
 import com.aug.flightbooking.infrastructure.web.dtos.CheckInRequest;
 import com.aug.flightbooking.infrastructure.web.mappers.CheckInCreateMapper;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class TicketCheckInController {
      * Ejecuta el check-in de un ticket.
      */
     @PostMapping("/checkin")
-    public Mono<ResponseEntity<Object>> checkIn(@RequestBody CheckInRequest checkInRequest) {
+    public Mono<ResponseEntity<Object>> checkIn(@Valid @RequestBody CheckInRequest checkInRequest) {
         return checkInTicketUseCase.checkIn(mapper.toCommand(checkInRequest))
             .thenReturn(ResponseEntity.accepted().build())
             .onErrorResume(ex ->
