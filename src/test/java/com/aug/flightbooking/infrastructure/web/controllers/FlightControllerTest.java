@@ -56,9 +56,8 @@ class FlightControllerTest {
     @Autowired FlightResponseMapper flightResponseMapper;
 
     @Test
-    @DisplayName("POST /api/flight -> 200 OK con body mapeado")
-    void createFlight_ok() {
-        // request
+    @DisplayName("POST /api/flight -> 201 Created con body mapeado")
+    void createFlight_created() {
         FlightCreateRequest req = new FlightCreateRequest();
         req.setAirlineName("Avianca");
         req.setAirlineCode("AV");
@@ -69,7 +68,6 @@ class FlightControllerTest {
         req.setDepartureDate("2025-08-12T14:00:00Z");
         req.setArrivalDate("2025-08-12T16:30:00Z");
 
-        // mapper: request -> command
         CreateFlightCommand cmd = new CreateFlightCommand(
                 "Avianca","AV","AV123","BOG","MDE",180, 0,
                 Instant.parse("2025-08-12T14:00:00Z"),
@@ -77,7 +75,6 @@ class FlightControllerTest {
         );
         when(flightCreateMapper.toCommand(req)).thenReturn(cmd);
 
-        // use case -> dominio
         Flight created = Flight.fromPersistence(
                 10L, new Airline("Avianca","AV"), "AV123", "BOG","MDE",
                 180, 0,
@@ -87,7 +84,6 @@ class FlightControllerTest {
         );
         when(createFlightUseCase.create(cmd)).thenReturn(Mono.just(created));
 
-        // mapper: dominio -> response
         FlightCreateResponse resp = new FlightCreateResponse(
                 10L,"Avianca","AV","AV123","BOG","MDE",180,
                 Instant.parse("2025-08-12T14:00:00Z"),
@@ -99,8 +95,7 @@ class FlightControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(req)
                 .exchange()
-                // El controller devuelve ResponseEntity.ok(...), por eso 200
-                .expectStatus().isOk()
+                .expectStatus().isCreated()          // ← ahora 201
                 .expectHeader().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 .expectBody()
                 .jsonPath("$.id").isEqualTo(10)

@@ -32,7 +32,7 @@ public class FlightController {
         CreateFlightCommand command = mapper.toCommand(request);
         return createFlightUseCase
                 .create(command)
-                .map(r -> ResponseEntity.ok().body(mapper.toResponse(r)))
+                .map(r -> ResponseEntity.status(HttpStatus.CREATED).body(mapper.toResponse(r)))
                 .defaultIfEmpty(ResponseEntity.internalServerError().build());
     }
 
