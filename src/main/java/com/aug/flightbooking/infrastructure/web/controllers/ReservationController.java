@@ -30,9 +30,8 @@ public class ReservationController {
     public Mono<ResponseEntity<ReservationResponse>> createReservation(@Valid  @RequestBody ReservationRequest request) {
         return createReservationUseCase
                 .createReservation(mapper.toCommand(request))
-                .map(
-                        r -> ResponseEntity.ok()
-                                .body(mapper.toResponse(r))
+                .map(r -> ResponseEntity.status(HttpStatus.CREATED)
+                        .body(mapper.toResponse(r))
                 ).defaultIfEmpty(ResponseEntity.internalServerError().build());
     }
 
