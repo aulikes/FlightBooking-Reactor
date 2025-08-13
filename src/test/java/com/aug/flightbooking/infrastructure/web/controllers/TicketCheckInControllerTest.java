@@ -47,7 +47,6 @@ class TicketCheckInControllerTest {
     @Test
     @DisplayName("POST /api/ticket/checkin -> 202 Accepted cuando el check-in completa")
     void checkIn_ok_returns_202() {
-        // Request válido (record con 2 campos @NotNull, pero el controller no usa @Valid)
         CheckInRequest req = new CheckInRequest(42L, 1_725_000_000_000L);
 
         // Mapper: request -> command
