@@ -1,9 +1,11 @@
-# Flight Booking Reactive System ✈️
+# ✈️ Flight Booking Reactive System 
 
 ## 🌟 Visión General
-Este proyecto es una **prueba de concepto (POC)** para demostrar un sistema de reserva de vuelos utilizando una arquitectura basada en eventos, totalmente reactiva y distribuida. Aunque no representa un proceso completo en producción, **implementa las piezas clave del dominio**, como creación de reservas, verificación de disponibilidad de asientos, publicación de eventos asincrónicos y manejo de estados con persistencia reactiva.
+Este proyecto se basa en la especificación de un sistema de reserva de vuelos utilizando una arquitectura hexagonal y basada en eventos, totalmente reactiva y distribuida. Aunque no representa un proceso completo en producción, **implementa las piezas clave del dominio**, como creación de reservas, verificación de disponibilidad de asientos, publicación de eventos asincrónicos y manejo de estados con persistencia reactiva.
 
 Su propósito es **explorar cómo construir una solución moderna y desacoplada**, aplicando buenas prácticas arquitectónicas, patrones de diseño y tecnologías de última generación como **WebFlux, Reactor Core, Redis y Kafka**.
+
+> Este sistema está diseñado para crecer hacia infraestructura, APIs REST, mensajería o persistencia sin afectar la lógica del negocio. Todo se basa en un modelo rico, autocontenido y coherente con las reglas del negocio.
 
 ---
 
@@ -16,26 +18,29 @@ Su propósito es **explorar cómo construir una solución moderna y desacoplada*
 - **Liquibase** con scripts en formato YAML para control de versiones de base de datos
 - **Arquitectura Hexagonal (Ports & Adapters)**
 - **Domain-Driven Design (DDD)**
+- **JaCoCo** + **SonarQube** (calidad)
 - **Lombok**
+- **Docker Compose** para dependencias (Zookeeper/Kafka, Redis, Postgres, etc.)
 
 ---
 
-## 🔍 Mejores Prácticas Aplicadas
-- Eventos **versionados** y trazables (`traceId`)
-- `IntegrationEventWrapper` como contrato de publicación
-- No se usan eventos genéricos universales
-- Dominios inmutables, controlados mediante **máquina de estados**
-- Separación completa entre **infraestructura, aplicación y lógica de negocio**
+## 🔍 Principios y buenas prácticas
+- **Eventos versionados** y trazables (`traceId`, `timestamp`).
+- **IntegrationEventWrapper** como contrato de publicación.
+- No se usan eventos genéricos universales.
+- Dominios inmutables, controlados mediante **máquina de estados**.
+- Separación completa entre **infraestructura, aplicación y dominio**
 - **Value Objects** y entidades con responsabilidad encapsulada
 - Separación entre `command`, `use case`, `controller`, `publisher`, `listener`
-- Flujo reactivo puro con KafkaReceiver / KafkaSender (sin @KafkaListener)
-- Orquestación de listeners con ApplicationReadyEvent y suscripción controlada 
-- Uso de fábricas reutilizables para KafkaSender y KafkaReceiver
-- DTOs de entrada y salida separados, mapeados con MapStruct 
-- Configuración externalizada con AppProperties y @ConfigurationProperties
-- TTL en Redis como estrategia de expiración distribuida
-- Resultados ricos con clases, evitando tipos primitivos
-
+- Flujo reactivo puro con KafkaReceiver / KafkaSender (sin @KafkaListener).
+- Orquestación de listeners con ApplicationReadyEvent y suscripción controlada.
+- **Máquinas de estados** en dominio (p. ej. `EstadoOrden`, `EstadoEnvio`).
+- **Mapper de persistencia** (Entidad ↔ Dominio).
+- Uso de fábricas reutilizables para KafkaSender y KafkaReceiver.
+- DTOs de entrada y salida separados, mapeados con MapStruct.
+- Configuración externalizada con AppProperties y @ConfigurationProperties.
+- TTL en Redis como estrategia de expiración distribuida.
+- Resultados ricos con clases, evitando tipos primitivos.
 
 ---
 
@@ -88,13 +93,6 @@ docker compose -p flightbooking up -d
 docker ps
 ```
 
-### 🧪 Verificación
-
-Una vez iniciado el entorno, accede a:
-
-- API: [http://localhost:8095/api/flight](http://localhost:8095/api/flight)
-- Swagger: [http://localhost:8095/swagger-ui.html](http://localhost:8095/swagger-ui.html)
-
 ---
 
 ## 📚 Documentación de la API (Swagger / OpenAPI)
@@ -123,7 +121,7 @@ La documentación se genera automáticamente gracias a la integración con `spri
 
 ---
 
-## 🧩 Diagrama de flujo
+### 🧩 Diagrama de flujo
 
 ```mermaid
 flowchart TD
@@ -158,6 +156,8 @@ flowchart TD
     E4 -- Sí --> E5["Marcar como FAILED"]
     E4 -- No --> E6["Ignorar"]
 ```
+
+---
 
 ## Consideraciones
 
